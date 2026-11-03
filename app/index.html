@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0F1D2B" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#EEF2F7" media="(prefers-color-scheme: light)" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+    <link rel="apple-touch-icon" href="icon-512.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Provisio Online" />
+    <title>Provisio Online</title>
+    <!-- Content-Security-Policy (Online-Version): Verbindungen nur zur eigenen
+     Seite und zur eigenen Schnittstelle in der EU (Scaleway, Paris). -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; connect-src 'self' https://provisioonlinensg87iza-api.functions.fnc.fr-par.scw.cloud; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <!-- Stylesheets in fester Reihenfolge (spätere ergänzen frühere).
+     ?v= bei jeder Veröffentlichung erhöhen (Cache-Busting). -->
+    <link rel="stylesheet" href="css/01-basis.css?v=56" />
+    <link rel="stylesheet" href="css/02-layout.css?v=56" />
+    <link rel="stylesheet" href="css/03-farbwelten.css?v=56" />
+    <link rel="stylesheet" href="css/04-planer.css?v=56" />
+    <link rel="stylesheet" href="css/05-heute-team.css?v=56" />
+    <link rel="stylesheet" href="css/06-gestaltung.css?v=56" />
+    <link rel="stylesheet" href="css/07-bedienung.css?v=56" />
+    <link rel="stylesheet" href="css/08-planer-bloecke.css?v=56" />
+    <link rel="stylesheet" href="css/09-fenster-tabellen.css?v=56" />
+    <link rel="stylesheet" href="css/10-verkaeufe.css?v=56" />
+    <link rel="stylesheet" href="css/11-anmeldungen-katalog.css?v=56" />
+    <link rel="stylesheet" href="css/13-animationen.css?v=56" />
+    <link rel="stylesheet" href="css/14-inventur-provision.css?v=56" />
+    <link rel="stylesheet" href="css/15-motion.css?v=56" />
+    <link rel="stylesheet" href="css/16-listen-motion.css?v=56" />
+    <link rel="stylesheet" href="css/17-oberflaeche.css?v=56" />
+    <link rel="stylesheet" href="css/18-performance.css?v=56" />
+    <link rel="stylesheet" href="css/19-langzeitziel.css?v=56" />
+    <link rel="stylesheet" href="css/20-heute-provision-planer.css?v=56" />
+    <link rel="stylesheet" href="css/21-apple.css?v=56" />
+    <link rel="stylesheet" href="css/22-duo.css?v=56" />
+    <link rel="stylesheet" href="css/23-einfuehrung.css?v=56" />
+    <link rel="stylesheet" href="css/24-online.css?v=56" />
+  </head>
+  <body>
+    <div class="boot" id="boot">
+      <div class="bootring"><span></span><span></span><span></span></div>
+      <p>Anmeldung wird geprüft …</p>
+      <button class="mini" id="bootAbbruch" hidden>Doch von Hand anmelden</button>
+    </div>
+
+    <div class="login" id="login" hidden>
+      <div class="loginbox" id="loginBox"></div>
+    </div>
+
+    <header class="topbar" id="topbar">
+      <button
+        class="burger"
+        id="burger"
+        aria-label="Menü öffnen"
+        aria-expanded="false"
+        aria-controls="drawer"
+      >
+        <span></span><span></span><span></span>
+      </button>
+      <span class="mark" id="markText" data-seite="Heute"><span class="appname">Provisio</span></span>
+      <span class="rechts">
+        <span class="savestate" id="saveState"></span>
+      </span>
+    </header>
+    <div class="scrim" id="scrim"></div>
+    <nav class="drawer" id="drawer" aria-label="Hauptmenü">
+      <button class="menuezu" id="menueZu" aria-label="Menü schließen">&#10005;</button>
+      <div class="brandbox">
+        <svg class="duese" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <g
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          >
+            <line x1="10" y1="19" x2="54" y2="19" />
+            <line x1="25" y1="20.5" x2="25" y2="27" />
+            <line x1="39" y1="20.5" x2="39" y2="27" />
+            <rect x="18" y="27" width="28" height="18" rx="7" />
+            <line x1="19.5" y1="37" x2="44.5" y2="37" />
+          </g>
+        </svg>
+        <div class="btext"><b>Provisio</b><span>Vertriebsplaner</span></div>
+      </div>
+      <div class="konto" id="drawerFoot"></div>
+      <div class="navliste" id="navHaupt"></div>
+      <div class="navliste unten" id="navTL"></div>
+    </nav>
+
+    <main class="wrap">
+      <div class="hero">
+        <div class="logomark" aria-hidden="true">
+          <svg class="duese" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <g
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            >
+              <line x1="10" y1="19" x2="54" y2="19" />
+              <line x1="25" y1="20.5" x2="25" y2="27" />
+              <line x1="39" y1="20.5" x2="39" y2="27" />
+              <rect x="18" y="27" width="28" height="18" rx="7" />
+              <line x1="19.5" y1="37" x2="44.5" y2="37" />
+            </g>
+          </svg>
+        </div>
+        <h1>Provisio<span>Vertriebsplaner</span></h1>
+        <div class="streifen" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="pagetitle" id="pagetitle">Planer</div>
+      </div>
+
+      <section class="page" id="page-heute"><div id="heute"></div></section>
+      <section class="page active" id="page-planer">
+        <div id="uebPlaner"></div>
+        <div class="weekbar">
+          <button class="nav" id="prev" aria-label="Vorherige Woche">
+            <svg viewBox="0 0 24 24"><polyline points="15 5 8 12 15 19" /></svg>
+          </button>
+          <div class="weeklabel">
+            <div class="kw" id="kwText">KW –</div>
+            <div class="range" id="rangeText">–</div>
+          </div>
+          <button class="nav" id="next" aria-label="Nächste Woche">
+            <svg viewBox="0 0 24 24"><polyline points="9 5 16 12 9 19" /></svg>
+          </button>
+        </div>
+        <div class="wochenaktion">
+          <button class="todaybtn" id="todayBtn" hidden>Zur aktuellen Woche</button>
+          <button class="todaybtn" id="kopierBtn">Woche kopieren</button>
+        </div>
+        <div class="tagbar" id="tagbar"></div>
+        <div class="board">
+          <div class="scroller"><div class="grid" id="grid"></div></div>
+        </div>
+        <details class="legend">
+          <summary>Farblegende</summary>
+          <div class="chips" id="chips"></div>
+        </details>
+        <div id="papierkorb"></div>
+      </section>
+
+      <section class="page" id="page-potenzial"><div id="plist"></div></section>
+      <section class="page" id="page-wiedervorlage"><div id="wvliste"></div></section>
+      <section class="page" id="page-empfehlung"><div id="elist"></div></section>
+      <section class="page" id="page-interessenten"><div id="intliste"></div></section>
+      <section class="page" id="page-statistik">
+        <div class="weekbar">
+          <button class="nav" id="prev2" aria-label="Vorherige Woche">
+            <svg viewBox="0 0 24 24"><polyline points="15 5 8 12 15 19" /></svg>
+          </button>
+          <div class="weeklabel">
+            <div class="kw" id="kwText2">KW –</div>
+            <div class="range" id="rangeText2">–</div>
+          </div>
+          <button class="nav" id="next2" aria-label="Nächste Woche">
+            <svg viewBox="0 0 24 24"><polyline points="9 5 16 12 9 19" /></svg>
+          </button>
+        </div>
+        <button class="todaybtn" id="todayBtn2" hidden>Zur aktuellen Woche</button>
+        <button class="pdfknopf" id="statPdfBtn" type="button">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+          Als PDF laden · A4 quer
+        </button>
+        <div class="printhead" id="printhead"></div>
+        <div class="board nurbreit">
+          <div class="scroller"><table class="stat" id="statTable"></table></div>
+        </div>
+        <div id="statMobil" class="nurschmal"></div>
+        <p class="statnote">Jeder nachbereitete Kundentermin trägt sich hier automatisch ein.</p>
+      </section>
+      <section class="page" id="page-auswertungen">
+        <div class="rangebar">
+          <span class="rl">Zeitraum</span>
+          <div class="seg" id="rangeSeg"></div>
+        </div>
+        <div id="ausw"></div>
+      </section>
+      <section class="page" id="page-verkaeufe"><div id="verkliste"></div></section>
+      <section class="page" id="page-provision"><div id="prov"></div></section>
+      <section class="page" id="page-team">
+        <div class="asec">
+          <h3>Teammitglieder</h3>
+          <p class="sub">
+            Dein Team trägst du selbst ein. Lege jedes Mitglied an und gib seine Wochenzahlen hier ein — sie
+            zählen in Wochenmeldung und Teamprovision mit.
+          </p>
+          <div class="teambar"></div>
+        </div>
+      </section>
+      <section class="page" id="page-inventur"><div id="inventur"></div></section>
+      <section class="page" id="page-jahr"><div id="jahr"></div></section>
+      <section class="page" id="page-ziele"><div id="ziele"></div></section>
+      <section class="page" id="page-jobtickets"><div id="jobt"></div></section>
+      <section class="page" id="page-teamumsatz"><div id="tumsatz"></div></section>
+      <section class="page" id="page-teammeldung"><div id="tmeldung"></div></section>
+      <section class="page" id="page-fahrten"><div id="fahrtenbuch"></div></section>
+      <section class="page" id="page-kunden"><div id="kunden"></div></section>
+      <section class="page" id="page-faq"><div id="faq"></div></section>
+      <section class="page" id="page-profil"><div id="profil"></div></section>
+      <section class="page" id="page-wunsch">
+        <div class="asec">
+          <h3>Provisionswunsch</h3>
+          <p class="sub">Drei Angaben — den Rest rechnet die App.</p>
+          <div id="wunschForm"></div>
+        </div>
+        <div id="wunschZiel"></div>
+      </section>
+    </main>
+
+    <div id="druckPot" class="druckbereich"></div>
+    <div id="druckStat" class="druckstat" aria-hidden="true"></div>
+
+    <nav class="tabbar" id="tabbar" aria-label="Schnellzugriff">
+      <a class="navlink tab" href="#heute" data-page="heute"
+        ><span class="mic"
+          ><svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="8.5" />
+            <path d="M12 7.5V12l3 2" /></svg></span
+        ><i>Heute</i></a
+      >
+      <a class="navlink tab" href="#planer" data-page="planer"
+        ><span class="mic"
+          ><svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 6h16v14H4z" />
+            <path d="M4 10h16M9 3v4M15 3v4M9 14h2M13 14h2M9 17h2M13 17h2" /></svg></span
+        ><i>Planer</i></a
+      >
+      <a class="navlink tab" href="#inventur" data-page="inventur"
+        ><span class="mic"
+          ><svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z" />
+            <path d="M3 8.5 12 13l9-4.5M12 13v7" /></svg></span
+        ><i>K70</i></a
+      >
+      <a class="navlink tab" href="#provision" data-page="provision"
+        ><span class="mic"
+          ><svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="5" y="3" width="14" height="18" rx="2" />
+            <path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M16 15v2" /></svg></span
+        ><i>Provision</i></a
+      >
+      <button class="tab tabmehr" id="tabMehr" aria-label="Menü öffnen">
+        <span class="mic"
+          ><svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" /></svg></span
+        ><i>Mehr</i>
+      </button>
+    </nav>
+
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="back" data-close></div>
+      <div class="sheet" id="sheet"></div>
+    </div>
+
+    <script src="js/01-konstanten.js?v=56"></script>
+    <script src="js/02-datum.js?v=56"></script>
+    <script src="js/03-daten.js?v=56"></script>
+    <script src="js/04-raster.js?v=56"></script>
+    <script src="js/05-dialog.js?v=56"></script>
+    <script src="js/06-nachbereitung.js?v=56"></script>
+    <script src="js/07-potenzial.js?v=56"></script>
+    <script src="js/08-wiedervorlage.js?v=56"></script>
+    <script src="js/09-dialogschritte.js?v=56"></script>
+    <script src="js/10-statistik.js?v=56"></script>
+    <script src="js/11-druck.js?v=56"></script>
+    <script src="js/12-vertriebsmonat-provision.js?v=56"></script>
+    <script src="js/13-provisionsrechner.js?v=56"></script>
+    <script src="js/14-provisionswunsch.js?v=56"></script>
+    <script src="js/15-auswertungen.js?v=56"></script>
+    <script src="js/16-cloud-sync.js?v=56"></script>
+    <script src="js/17-anmeldung.js?v=56"></script>
+    <script src="js/18-teamansicht.js?v=56"></script>
+    <script src="js/19-profil.js?v=56"></script>
+    <script src="js/20-wochenmeldung.js?v=56"></script>
+    <script src="js/21-adresse.js?v=56"></script>
+    <script src="js/22-inventur.js?v=56"></script>
+    <script src="js/23-ziele-jobtickets.js?v=56"></script>
+    <script src="js/24-team-wochenmeldung.js?v=56"></script>
+    <script src="js/25-fahrtenbuch.js?v=56"></script>
+    <script src="js/26-kundenliste.js?v=56"></script>
+    <script src="js/27-abgleich-papierkorb.js?v=56"></script>
+    <script src="js/28-heute.js?v=56"></script>
+    <script src="js/29-jahresrueckblick.js?v=56"></script>
+    <script src="js/30-zaehlen.js?v=56"></script>
+    <script src="js/31-hilfe.js?v=56"></script>
+    <script src="js/32-rahmen.js?v=56"></script>
+    <script src="js/33-planer-raster.js?v=56"></script>
+    <script src="js/34-messe.js?v=56"></script>
+    <script src="js/35-wochenmeldung-kennzahlen.js?v=56"></script>
+    <script src="js/36-heute-uebersicht.js?v=56"></script>
+    <script src="js/37-inventur-mindestbestand.js?v=56"></script>
+    <script src="js/38-team-provision.js?v=56"></script>
+    <script src="js/39-einstellungen-team.js?v=56"></script>
+    <script src="js/40-nichtkauf-checkin.js?v=56"></script>
+    <script src="js/41-buero-verkaeufe.js?v=56"></script>
+    <script src="js/42-anmeldungen-kampagnen.js?v=56"></script>
+    <script src="js/43-katalog.js?v=56"></script>
+    <script src="js/44-animationen.js?v=56"></script>
+    <script src="js/45-datenfreigabe.js?v=56"></script>
+    <script src="js/46-sicherheit.js?v=56"></script>
+    <script src="js/47-motion.js?v=56"></script>
+    <script src="js/48-zaehlwerk.js?v=56"></script>
+    <script src="js/49-listen-motion.js?v=56"></script>
+    <script src="js/50-interessenten.js?v=56"></script>
+    <script src="js/51-oberflaeche.js?v=56"></script>
+    <script src="js/52-langzeitziel.js?v=56"></script>
+    <script src="js/53-heute-provision-planer.js?v=56"></script>
+    <script src="js/54-terminmodus-trichter-urlaub.js?v=56"></script>
+    <script src="js/55-nachbereitung-assistent.js?v=56"></script>
+    <script src="js/56-provisionsaufteilung.js?v=56"></script>
+    <script src="js/57-teamsatz.js?v=56"></script>
+    <script src="js/58-provision-ansicht.js?v=56"></script>
+    <script src="js/59-versionen.js?v=56"></script>
+    <script src="js/60-einstellungen.js?v=56"></script>
+    <script src="js/61-gedrueckt-halten.js?v=56"></script>
+    <script src="js/62-verkaeufe-provision.js?v=56"></script>
+    <script src="js/63-planer-extras.js?v=56"></script>
+    <script src="js/64-schnelltermin.js?v=56"></script>
+    <script src="js/65-leiste-fixieren.js?v=56"></script>
+    <script src="js/66-demo.js?v=56"></script>
+    <script src="js/67-duo.js?v=56"></script>
+    <script src="js/68-fenster-ruhig.js?v=56"></script>
+    <script src="js/69-einfuehrung.js?v=56"></script>
+    <script src="js/70-viertelstunde.js?v=56"></script>
+    <script src="js/71-kw-uebersicht.js?v=56"></script>
+    <script src="js/72-tagesfuelle.js?v=56"></script>
+    <script src="js/73-sicherung.js?v=56"></script>
+    <script src="js/74-pdf-auslesen.js?v=56"></script>
+    <script src="js/75-pdf-import.js?v=56"></script>
+    <script src="js/76-teammeldung-form.js?v=56"></script>
+    <script src="js/77-door-to-door.js?v=56"></script>
+    <script src="js/78-online.js?v=56"></script>
+  </body>
+</html>

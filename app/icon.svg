@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs><linearGradient id="b2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b3f68"/><stop offset="1" stop-color="#0b2138"/></linearGradient></defs>
+  <rect width="512" height="512" fill="url(#b2)"/>
+  <!-- skyline -->
+  <g fill="#2f5c8c">
+    <rect x="70" y="300" width="48" height="118" rx="6"/>
+    <rect x="128" y="258" width="40" height="160" rx="6"/>
+    <rect x="178" y="320" width="44" height="98" rx="6"/>
+    <rect x="300" y="286" width="46" height="132" rx="6"/>
+    <rect x="356" y="250" width="38" height="168" rx="6"/>
+    <rect x="404" y="312" width="44" height="106" rx="6"/>
+  </g>
+  <!-- church-ish tower -->
+  <rect x="236" y="214" width="40" height="204" rx="6" fill="#39699c"/>
+  <path d="M236 214 L256 182 L276 214 Z" fill="#39699c"/>
+  <!-- schwebebahn track + car -->
+  <rect x="80" y="196" width="352" height="16" rx="8" fill="#cfe0f2"/>
+  <rect x="250" y="208" width="10" height="34" rx="5" fill="#cfe0f2"/>
+  <rect x="300" y="208" width="10" height="34" rx="5" fill="#cfe0f2"/>
+  <rect x="226" y="236" width="118" height="60" rx="18" fill="#ffffff"/>
+  <rect x="240" y="252" width="90" height="28" rx="9" fill="#f4b63f"/>
+</svg>

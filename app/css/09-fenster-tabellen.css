@@ -1,0 +1,330 @@
+/**
+ * Fenster, Tabellen, Nachbereitung
+ *
+ * Popups, Kacheln, Tabellen, Nachbereitung, Planerleiste und Inventur.
+ */
+
+/* ---------- Planer: Leiste oben ---------- */
+.gp .gpleiste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+.gp .gpansicht {
+  display: flex;
+  gap: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 3px;
+}
+.gp .gpansicht button {
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+}
+.gp .gpansicht button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #08140e;
+}
+body.hell .gp .gpansicht button[aria-pressed="true"] {
+  color: #fff;
+}
+/* Der Sortierknopf bleibt unauffällig rechts */
+.gp .gprichtung {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--faint);
+  font-size: 0.9rem;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+}
+.gp .gprichtung:active {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+/* Legende und Erklärung oben, kompakt */
+.gp .gperkl {
+  margin-bottom: 7px;
+}
+.gp .gplegende {
+  margin: 0 0 9px;
+  justify-content: center;
+}
+/* Zeitleiste: nur die Stunde, mittig */
+.gp .gprz b {
+  font-size: 0.72rem;
+}
+.gp {
+  --gp-rail: 38px;
+}
+.gp.breit {
+  --gp-rail: 42px;
+}
+
+/* Drei-Tage-Ansicht: Blöcke dürfen mehr Text zeigen */
+.gp .gpblock b {
+  font-size: 0.74rem;
+}
+.gp .gpblock em {
+  font-size: 0.58rem;
+}
+.gp.breit .gpblock b {
+  font-size: 0.66rem;
+}
+.gp.breit .gpblock em {
+  font-size: 0.52rem;
+}
+
+/* ---------- Kacheln gleichmäßig verteilen ---------- */
+.kpis {
+  display: grid !important;
+  gap: 8px;
+}
+.kpis {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kpis > .kpi {
+  flex: none !important;
+}
+.kpis > .kpi:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.kpis > .kpi:only-child {
+  grid-column: 1 / -1;
+}
+.kpi,
+.kpi * {
+  text-align: center !important;
+}
+.kpi {
+  padding: 11px 12px;
+}
+.kpi b,
+.kpi .kv {
+  font-size: 1.1rem;
+}
+
+/* ---------- Popups sauber gerundet ---------- */
+.sheet {
+  border-radius: 24px 24px 0 0;
+  overflow: hidden;
+}
+.sheet > header,
+.sheet .mhead {
+  border-radius: 0;
+  background: transparent;
+}
+.sheet,
+.sheet * {
+  overflow-wrap: anywhere;
+}
+.sheet .grp {
+  margin-bottom: 12px;
+}
+.sheet .actions {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sheet .actions .btn {
+  flex: 1 1 140px;
+}
+
+/* ---------- Nachbereitung: Beschriftung immer über dem Feld ---------- */
+.sect {
+  display: block;
+  margin-bottom: 14px;
+}
+.sect > .lb {
+  display: block;
+  margin-bottom: 6px;
+  text-align: left !important;
+}
+.field {
+  display: block;
+}
+.field label {
+  display: block;
+  text-align: left !important;
+}
+/* Blockkopf: Titel oben, Zusammenfassung darunter */
+.kh {
+  grid-template-columns: 20px minmax(0, 1fr) !important;
+  row-gap: 2px;
+  align-items: start;
+}
+.kh b {
+  white-space: normal !important;
+}
+.kh .sm {
+  grid-column: 2;
+  text-align: left !important;
+  max-width: none !important;
+  white-space: normal !important;
+}
+/* Die Fortschrittsleiste in der Kundennachbereitung ist raus */
+.nbfortschritt {
+  display: none !important;
+}
+
+/* ---------- Tabellen: ein ruhiger Kopf ---------- */
+.atable thead th,
+.stat thead th {
+  white-space: normal !important;
+  line-height: 1.25;
+  font-size: 0.6rem;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: bottom;
+}
+.stat thead tr.grp th {
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  padding: 5px 6px;
+}
+.atable thead th:first-child,
+.stat thead th:first-child {
+  text-align: left !important;
+}
+.meld td {
+  vertical-align: top;
+}
+
+/* ---------- Inventur: Mindestbestände lesbar ---------- */
+.invzeile {
+  padding: 10px 11px;
+  gap: 10px;
+}
+.invzeile .nm {
+  font-size: 0.82rem;
+}
+.invzeile .invminlbl {
+  font-size: 0.66rem;
+}
+.invzeile .pr {
+  font-size: 0.74rem;
+}
+.invzeile .invminknopf {
+  padding: 8px 12px;
+  font-size: 0.76rem;
+}
+.invextra .invkachel {
+  padding: 11px 12px;
+}
+.invextra .htx b {
+  font-size: 0.82rem;
+}
+.invextra .htx span {
+  font-size: 0.68rem;
+}
+.stepper button {
+  width: 34px;
+  height: 34px;
+}
+.stepper b {
+  font-size: 0.9rem;
+  min-width: 26px;
+}
+
+/* ---------- Nachbesserungen aus dem Alltag ---------- */
+
+/* Heute: alles zentriert */
+#heute .htkopf,
+#heute .htkopf *,
+#heute .hkachel,
+#heute .hkachel *,
+#heute .hpill .htx,
+#heute .hpill .htx *,
+#heute .hleer,
+#heute .hkhinweis,
+#heute .hzeile .hin,
+#heute .hzeile .hin * {
+  text-align: center !important;
+}
+#heute .hkachel {
+  align-items: center;
+}
+#heute .hkachel .hkv {
+  justify-content: center;
+}
+#heute .hin {
+  align-items: center;
+}
+#heute .htkopf {
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Planer: Erklärung und Legende unter dem Plan */
+.gp .gperkl {
+  margin: 12px 0 7px;
+}
+.gp .gplegende {
+  margin: 0;
+}
+
+/* Inventur: Artikelname in eigener Zeile */
+.invzeile {
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+.invzeile .nm {
+  flex: 1 1 100%;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: none;
+  font-size: 0.84rem;
+  line-height: 1.3;
+}
+.invzeile .nm .hw {
+  display: block;
+  font-size: 0.66rem;
+  color: var(--warn);
+  font-style: normal;
+}
+.invzeile .pr {
+  flex: 0 0 auto;
+  width: auto;
+  margin-right: auto;
+}
+.invzeile .stepper {
+  flex: 0 0 auto;
+}
+.invzeile .invminknopf {
+  flex: 0 0 auto;
+  margin-left: 0;
+}
+.invzeile .markbox {
+  order: -1;
+}
+
+/* Beschriftungen in Kacheln nie mitten im Wort trennen */
+.invextra .htx b,
+.invextra .htx span,
+#heute .htx b,
+#heute .htx span,
+.kpi .kl,
+.asec > h3 {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: none;
+}
+.invextra .invkachel {
+  align-items: flex-start;
+}
+.invextra .htx b {
+  line-height: 1.25;
+}

@@ -1,0 +1,253 @@
+/**
+ * Bedienung
+ *
+ * Touch-Verhalten, Zoom-Schutz, Planer- und Einstellungsdetails.
+ */
+
+/* ---------- Kein Zoomen bei Doppeltipp, kein seitliches Wegrutschen ---------- */
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+button,
+a,
+input,
+select,
+textarea,
+label,
+[role="button"],
+.slot,
+.gpm,
+.opt,
+.chip,
+.nkchip {
+  touch-action: manipulation;
+}
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.wrap,
+.page,
+.asec {
+  max-width: 100%;
+  min-width: 0;
+}
+.asec {
+  overflow-wrap: anywhere;
+}
+/* iOS zoomt bei Eingabefeldern unter 16px automatisch hinein */
+@media (max-width: 759px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ---------- Kacheln, Überschriften und Kartentexte zentriert ---------- */
+.asec > h3 {
+  justify-content: center;
+  text-align: center !important;
+  padding-left: 0;
+  padding-right: 0;
+}
+.asec > .sub,
+.asec > p.hinweis,
+.asec > .hinweis,
+.asec > .aempty {
+  text-align: center !important;
+}
+.kpi,
+.kpi * {
+  text-align: center !important;
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.h4,
+.ah4 {
+  text-align: center !important;
+}
+.asec .actions {
+  justify-content: center;
+}
+/* Was eine Liste oder ein Formular ist, bleibt linksbündig – das liest sich besser */
+.rszeile,
+.rszeile *,
+.hzeile,
+.hzeile *,
+.hfbox .hfzeile *,
+.field,
+.field *,
+.opt,
+.opt *,
+.invzeile,
+.invzeile *,
+.lk,
+.lk *,
+.pcard .meta,
+.kh,
+.kh * {
+  text-align: left !important;
+}
+.atable th,
+.atable td {
+  text-align: right !important;
+}
+.atable th:first-child,
+.atable td:first-child {
+  text-align: left !important;
+}
+
+/* Einzelne Kachel am Ende einer Reihe darf die volle Breite nehmen */
+.kpis > .kpi:only-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 759px) {
+  .kpis > .kpi:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- Tabellen: Köpfe dürfen umbrechen statt zu quetschen ---------- */
+.atable th {
+  white-space: normal !important;
+  line-height: 1.2;
+  font-size: 0.6rem;
+  padding: 7px 7px;
+  vertical-align: bottom;
+  letter-spacing: 0.02em;
+}
+.atable td {
+  padding: 8px 7px;
+}
+.ascroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* Lange Zusatzangaben in Auswertungszeilen umbrechen statt über den Rand laufen */
+.asec [class*="bar"],
+.asec .aline {
+  min-width: 0;
+}
+.asec .aline .vl,
+.asec .row .v,
+.asec .val {
+  white-space: normal;
+}
+
+/* ---------- Planer ---------- */
+/* Einheitliche Zeilenhöhe passend zur Zeitleiste */
+.gp .gprow,
+.gp .gprz {
+  min-height: 0 !important;
+  max-height: var(--gp-h);
+  height: var(--gp-h) !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+.gp .gprz {
+  align-items: center;
+  padding-right: 0 !important;
+}
+.gp .gprz b,
+.gp .gprz i {
+  text-align: center;
+}
+.gp {
+  --gp-rail: 44px;
+}
+.gp .gpplan {
+  padding: 4px 6px 4px 4px;
+}
+.gp .gpleiste {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 8px;
+}
+.gp .gprichtung {
+  font-size: 0.72rem;
+}
+/* K70: das Feld selbst ist die Schaltfläche */
+.gp .gpm.klick {
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  cursor: pointer;
+  position: relative;
+  font: inherit;
+  color: var(--text);
+  width: 100%;
+}
+.gp .gpm.klick:active {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
+}
+.gp .gpm .gpstift {
+  font-style: normal;
+  font-size: 0.62rem;
+  color: var(--accent);
+  margin-left: 4px;
+}
+.gp .gpmlbl {
+  align-items: flex-start;
+}
+
+/* Plus-Knopf unten rechts, nur im Planer */
+.gpfab {
+  position: fixed;
+  right: 18px;
+  z-index: 40;
+  display: none;
+  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--accent);
+  color: #08140e;
+  font-size: 1.9rem;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+}
+body.hell .gpfab {
+  color: #fff;
+}
+body[data-page="planer"] .gpfab {
+  display: grid;
+  place-content: center;
+}
+
+/* ---------- Einstellungen ---------- */
+.rszeile {
+  flex-wrap: wrap;
+}
+.rszeile > b {
+  margin-left: auto;
+}
+.rszeile .mini {
+  flex: none;
+}
+
+/* ---------- Kundenliste ---------- */
+[data-kdwv] {
+  display: none !important;
+}
+
+/* Beschriftung in den Zugangsdaten nie mitten im Wort umbrechen */
+.rszeile > span {
+  flex: 1 0 auto;
+  min-width: 70px;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.rszeile {
+  gap: 8px;
+}

@@ -1,0 +1,735 @@
+/**
+ * Animationen
+ *
+ * Ausschließlich transform und opacity. Stufe über <html data-anim="voll|ruhig|aus">.
+ */
+
+:root {
+  --feder: cubic-bezier(0.34, 1.56, 0.64, 1); /* mit Überschwingen */
+  --weich: cubic-bezier(0.22, 1, 0.36, 1); /* sanft auslaufend */
+  --scharf: cubic-bezier(0.65, 0, 0.35, 1); /* beschleunigt, bremst */
+}
+
+/* Komplett aus: alles bleibt sofort stehen. */
+html[data-anim="aus"] *,
+html[data-anim="aus"] *::before,
+html[data-anim="aus"] *::after {
+  animation-duration: 0.001s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0.001s !important;
+}
+
+/* ---------- Seitenwechsel ---------- */
+/* die alte, schlichte Einblendung aus ui.css wird ersetzt */
+html[data-anim] .page.active {
+  animation: none;
+}
+
+.page.raus {
+  animation: seiteRaus 0.17s var(--scharf) both;
+  pointer-events: none;
+}
+@keyframes seiteRaus {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.985);
+  }
+}
+
+/* Der Schwung, der über den Bildschirm läuft */
+#seitenwelle {
+  position: fixed;
+  inset: 0;
+  z-index: 62;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  contain: strict;
+}
+#seitenwelle i {
+  position: absolute;
+  left: -12%;
+  width: 124%;
+  height: 150%;
+  top: 100%;
+  border-radius: 52% 52% 0 0 / 24% 24% 0 0;
+  background: radial-gradient(
+    120% 60% at 50% 0%,
+    color-mix(in srgb, var(--accent) 92%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 55%, transparent) 46%,
+    color-mix(in srgb, var(--accent) 18%, transparent) 100%
+  );
+  box-shadow: 0 -24px 60px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+#seitenwelle.laeuft {
+  animation: welleWeg 0.58s linear forwards;
+}
+#seitenwelle.laeuft i {
+  animation: welleHoch 0.58s var(--scharf) forwards;
+}
+@keyframes welleHoch {
+  from {
+    top: 100%;
+  }
+  to {
+    top: -160%;
+  }
+}
+@keyframes welleWeg {
+  0% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Kopfzeile: der Seitenname wechselt mit einem kleinen Sprung */
+#pagetitle.wechsel,
+.mark.wechsel {
+  animation: titelTausch 0.42s var(--weich) both;
+}
+@keyframes titelTausch {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Blöcke gestaffelt ---------- */
+.einlaufen {
+  animation: blockRein 0.48s var(--weich) both;
+  animation-delay: calc(var(--i, 0) * 42ms);
+  will-change: transform, opacity;
+}
+@keyframes blockRein {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* nach dem Lauf räumen wir will-change wieder ab (per Skript) */
+
+/* Kacheln kommen etwas spielerischer */
+.kpi.einlaufen {
+  animation-name: kachelRein;
+  animation-duration: 0.56s;
+  animation-timing-function: var(--feder);
+}
+@keyframes kachelRein {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Tabellenzeilen rieseln herein */
+tr.zeilerein {
+  animation: zeileRein 0.4s var(--weich) both;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+@keyframes zeileRein {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Ziffernwalze ---------- */
+/* display muss sich gegen .kpi .kv{display:block} durchsetzen */
+.walze {
+  display: flex !important;
+  justify-content: center;
+  align-items: flex-start;
+  height: var(--zh, 1.2em);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.walze .zi {
+  display: block;
+  height: var(--zh, 1.2em);
+  overflow: hidden;
+  position: relative;
+  flex: none;
+}
+.walze .walzestapel {
+  display: block;
+  will-change: transform;
+}
+.walze .walzestapel > span {
+  display: block;
+  height: var(--zh, 1.2em);
+  line-height: var(--zh, 1.2em);
+  text-align: center;
+}
+.walze .fix {
+  display: block;
+  height: var(--zh, 1.2em);
+  line-height: var(--zh, 1.2em);
+  flex: none;
+  white-space: pre;
+}
+.kv.frischgerollt {
+  animation: zahlPuls 0.5s var(--feder);
+}
+@keyframes zahlPuls {
+  0% {
+    transform: none;
+  }
+  40% {
+    transform: scale(1.07);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* ---------- Balken und Ringe ---------- */
+.bar > i.waechst {
+  animation: balkenAuf var(--bd, 0.85s) var(--weich) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+@keyframes balkenAuf {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.bar > i.waechst {
+  transform-origin: left center;
+}
+
+.balken .stab.waechst,
+.balken i.waechst {
+  animation: stabAuf 0.8s var(--weich) both;
+  animation-delay: calc(var(--i, 0) * 45ms);
+  transform-origin: bottom center;
+}
+@keyframes stabAuf {
+  from {
+    transform: scaleY(0);
+    opacity: 0.3;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Fortschritt in Zielen und Jobtickets */
+.zbar > i.waechst,
+.fortschritt > i.waechst,
+.pbalken > i.waechst {
+  animation: balkenAuf 0.9s var(--weich) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+  transform-origin: left center;
+}
+
+/* ---------- Segmentleiste ---------- */
+.seg.mitpille {
+  position: relative;
+}
+.seg.mitpille > button {
+  position: relative;
+  z-index: 1;
+}
+.seg.mitpille > button[aria-pressed="true"] {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+.segpille {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--r, 14px);
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface-2));
+  border: 1px solid var(--accent);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent) 24%, transparent);
+  transition:
+    transform 0.4s var(--feder),
+    width 0.28s var(--weich),
+    height 0.28s var(--weich),
+    opacity 0.2s linear;
+  opacity: 0;
+}
+.segpille.gestreckt {
+  transition:
+    transform 0.4s var(--feder),
+    width 0.28s var(--weich),
+    height 0.28s var(--weich);
+}
+
+/* ---------- Untere Leiste ---------- */
+.tabpille {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  top: 6px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  transition:
+    transform 0.42s var(--feder),
+    width 0.26s var(--weich),
+    opacity 0.2s;
+  opacity: 0;
+}
+.tabbar .tab {
+  position: relative;
+  z-index: 1;
+}
+.tabbar .tab .mic {
+  transition: transform 0.32s var(--feder);
+}
+.tabbar .tab[aria-current="page"] .mic {
+  transform: translateY(-3px) scale(1.12);
+}
+
+/* ---------- Schaltflächen ---------- */
+html[data-anim="voll"] .btn,
+html[data-anim="voll"] .mini,
+html[data-anim="voll"] .todaybtn,
+html[data-anim="voll"] .segbtn,
+html[data-anim="voll"] .seg button,
+html[data-anim="voll"] .checks button {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.18s var(--feder),
+    background 0.15s,
+    border-color 0.15s,
+    filter 0.15s;
+}
+html[data-anim="voll"] .btn:active,
+html[data-anim="voll"] .mini:active,
+html[data-anim="voll"] .todaybtn:active,
+html[data-anim="voll"] .segbtn:active,
+html[data-anim="voll"] .seg button:active,
+html[data-anim="voll"] .checks button:active {
+  transform: scale(0.955);
+}
+
+html[data-anim="voll"] .slot:active,
+html[data-anim="voll"] .kpi:active {
+  transform: scale(0.975);
+  transition: transform 0.14s;
+}
+
+.druckwelle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: currentColor;
+  opacity: 0.26;
+  transform: scale(0);
+  animation: welleAuf 0.55s var(--weich) forwards;
+}
+@keyframes welleAuf {
+  from {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* Knopf, der gerade arbeitet */
+.btn.laedt {
+  color: transparent !important;
+  pointer-events: none;
+  position: relative;
+}
+.btn.laedt::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-top-color: var(--bg);
+  animation: kreisel 0.7s linear infinite;
+}
+.btn.primary.laedt::after {
+  border-top-color: var(--bg);
+}
+@keyframes kreisel {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.btn.fertig {
+  animation: knopfFertig 0.6s var(--feder);
+}
+@keyframes knopfFertig {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Fenster ---------- */
+html[data-anim] .sheet {
+  animation: none;
+}
+html[data-anim] #modal.open .sheet {
+  animation: fensterRein 0.46s var(--feder) both;
+  will-change: transform, opacity;
+}
+@keyframes fensterRein {
+  from {
+    opacity: 0;
+    transform: translateY(46px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 759px) {
+  @keyframes fensterRein {
+    from {
+      opacity: 0.4;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+html[data-anim] #modal .back {
+  transition:
+    opacity 0.3s var(--weich),
+    backdrop-filter 0.3s;
+}
+html[data-anim] #modal:not(.open) .back {
+  opacity: 0;
+}
+html[data-anim="voll"] #modal.open .back {
+  backdrop-filter: blur(7px) saturate(1.1);
+}
+
+/* Inhalt im Fenster staffelt nach */
+.sheetkoerper > .fensterteil {
+  animation: blockRein 0.4s var(--weich) both;
+  animation-delay: calc(60ms + var(--i, 0) * 34ms);
+}
+
+/* ---------- Planer ---------- */
+.slot.filled.faellt {
+  animation: terminRein 0.46s var(--feder) both;
+  animation-delay: calc(var(--i, 0) * 24ms);
+}
+@keyframes terminRein {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* frisch eingetragener Termin leuchtet kurz auf */
+.slot.filled.neu {
+  animation: terminNeu 1.1s var(--weich);
+}
+@keyframes terminNeu {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  40% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* ---------- Heute: Zeitmarke ---------- */
+html[data-anim="voll"] .htlnow,
+html[data-anim="voll"] .htljetzt,
+html[data-anim="voll"] .jetztmarke {
+  animation: markePuls 2.6s ease-in-out infinite;
+}
+@keyframes markePuls {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ---------- Speicherzustand und Hinweise ---------- */
+#saveState.frisch {
+  animation: gespeichert 0.9s var(--weich);
+}
+@keyframes gespeichert {
+  0% {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  25% {
+    transform: none;
+    opacity: 1;
+  }
+  75% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+.hinweis.neu,
+.err.neu {
+  animation: wackeln 0.5s var(--weich);
+}
+@keyframes wackeln {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  45% {
+    transform: translateX(5px);
+  }
+  70% {
+    transform: translateX(-3px);
+  }
+}
+
+/* ---------- Menü und Abdunklung ---------- */
+html[data-anim] .drawer {
+  transition: transform 0.42s var(--weich);
+}
+html[data-anim] .scrim {
+  transition: opacity 0.34s var(--weich);
+}
+html[data-anim="voll"] .drawer.open .navliste a {
+  animation: blockRein 0.36s var(--weich) both;
+  animation-delay: calc(60ms + var(--i, 0) * 26ms);
+}
+
+/* ---------- Platzhalter (Skeleton) ---------- */
+.schimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border-radius: var(--r-lg, 16px);
+}
+.schimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    color-mix(in srgb, var(--text) 8%, transparent) 50%,
+    transparent 80%
+  );
+  transform: translateX(-100%);
+  animation: schimmern 1.4s linear infinite;
+}
+@keyframes schimmern {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ---------- Einstellungszeile ---------- */
+#animWahl .seg {
+  margin-top: 6px;
+}
+#animWahl .sub {
+  margin-bottom: 14px;
+}
+
+/* ---------- Druck ---------- */
+@media print {
+  [data-wartet] {
+    visibility: visible !important;
+  }
+  .einlaufen,
+  .kpi.einlaufen,
+  tr.zeilerein,
+  .slot.filled.faellt,
+  .bar > i.waechst,
+  .sheetkoerper > .fensterteil {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  #seitenwelle {
+    display: none !important;
+  }
+}
+
+/* ---------- Schiebeschalter ---------- */
+.schalter {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  padding: 16px;
+  border-radius: var(--r-lg, 16px);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.schalter:hover {
+  background: var(--surface-3);
+}
+.schalter input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.schalter .gleis {
+  position: relative;
+  flex: none;
+  width: 58px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  border: 1px solid var(--line);
+  transition:
+    background 0.28s var(--weich),
+    border-color 0.28s var(--weich);
+  margin-top: 1px;
+}
+.schalter .knopf {
+  position: absolute;
+  left: 3px;
+  top: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--muted);
+  transition:
+    transform 0.34s var(--feder),
+    background 0.28s var(--weich),
+    width 0.18s var(--weich);
+}
+.schalter input:checked + .gleis {
+  background: color-mix(in srgb, var(--accent) 34%, var(--surface-3));
+  border-color: var(--accent);
+}
+.schalter input:checked + .gleis .knopf {
+  transform: translateX(24px);
+  background: var(--accent);
+}
+/* kurzes Stauchen beim Schieben, wie bei einem echten Kippschalter */
+.schalter:active .knopf {
+  width: 32px;
+}
+.schalter input:checked:active + .gleis .knopf {
+  transform: translateX(18px);
+  width: 32px;
+}
+.schalter input:focus-visible + .gleis {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.schalter .stext {
+  display: block;
+  line-height: 1.4;
+}
+.schalter .stext b {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+.schalter .stext small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
+.dsliste {
+  margin-top: 16px;
+  display: grid;
+  gap: 2px;
+}
+.dszeile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 0.86rem;
+  background: var(--surface-2);
+  transition:
+    background 0.25s var(--weich),
+    color 0.25s var(--weich);
+}
+.dszeile .dsicon {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.dszeile.ja .dsicon {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent);
+}
+.dszeile.nein .dsicon {
+  background: color-mix(in srgb, var(--warn) 22%, transparent);
+  color: var(--warn);
+}
+.dszeile.nein {
+  color: var(--muted);
+}

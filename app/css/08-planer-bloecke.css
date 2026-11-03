@@ -1,0 +1,109 @@
+/**
+ * Planer – Terminblöcke
+ *
+ * Kräftig = Ankunftsfenster, hell schraffiert = mögliche Dauer, Rahmen = feste Zeit.
+ */
+
+/* Der helle Teil des Blocks */
+.gp .gpa .gprest {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.55);
+  background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(0, 0, 0, 0.09) 5px 10px);
+}
+body:not(.hell) .gp .gpa .gprest {
+  background-color: rgba(21, 25, 26, 0.55);
+}
+/* Trennlinie zwischen Ankunft und Dauer */
+.gp .gpa .gprest[style*="bottom"] {
+  border-top: 1px dashed rgba(0, 0, 0, 0.28);
+}
+.gp .gpa .gprest[style*="top"] {
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.28);
+}
+
+/* Text sitzt immer im kräftigen Teil */
+.gp .gpa .gptxt.oben {
+  top: 5px;
+  bottom: auto;
+}
+.gp .gpa .gptxt.unten {
+  bottom: 4px;
+  top: auto;
+}
+.gp .gpa .gptxt {
+  z-index: 2;
+}
+body:not(.hell) .gp .gpa .gptxt b,
+body:not(.hell) .gp .gpa .gptxt em {
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+/* „bis 16" im hellen Teil */
+.gp .gpa .gpbis {
+  position: absolute;
+  right: 6px;
+  z-index: 2;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: #1d211b;
+  opacity: 0.8;
+  pointer-events: none;
+}
+body:not(.hell) .gp .gpa .gpbis {
+  color: #e7ecea;
+}
+.gp.breit .gpa .gpbis {
+  font-size: 0.46rem;
+  right: 4px;
+}
+
+/* Feste Termine: deutlicher Rahmen, keine Zweiteilung */
+.gp .gpa.fest {
+  box-shadow:
+    inset 0 0 0 2px rgba(0, 0, 0, 0.34),
+    0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+/* Erklärung über dem Plan */
+.gp .gperkl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 0 9px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 9px 11px;
+}
+.gp .gpez {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-align: left;
+}
+.gp .gpez b {
+  color: var(--text);
+}
+.gp .gpez .m {
+  flex: none;
+  width: 30px;
+  height: 14px;
+  border-radius: 4px;
+}
+.gp .gpez .m.voll {
+  background: #a9d18e;
+}
+.gp .gpez .m.hell {
+  background: color-mix(in srgb, #a9d18e 38%, var(--surface));
+  border: 1px dashed #a9d18e;
+}
+.gp .gpez .m.fix {
+  background: #77cdf5;
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.3);
+}

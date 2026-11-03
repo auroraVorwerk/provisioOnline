@@ -1,0 +1,612 @@
+/**
+ * Heute, Auswertung, Inventur, Team
+ *
+ * Stile zu 36-heute-uebersicht.js bis 38-team-provision.js.
+ */
+
+/* ---------- Heute ---------- */
+#heute .hkompass {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 5px;
+}
+#heute .hkachel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 9px 9px 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  box-shadow: var(--schatten);
+}
+#heute .hkl {
+  font-size: 0.64rem;
+  color: var(--faint);
+  font-weight: 600;
+  line-height: 1.25;
+}
+#heute .hkv {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+#heute .hkv b {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+#heute .hkv s {
+  text-decoration: none;
+  font-size: 0.72rem;
+  color: var(--faint);
+}
+#heute .hkbar {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  overflow: hidden;
+  margin-top: 6px;
+}
+#heute .hkbar i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+}
+#heute .hkachel.ok {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+}
+#heute .hkachel.ok .hkv b {
+  color: var(--accent);
+}
+#heute .hkachel.fehlt {
+  border-color: color-mix(in srgb, var(--warn) 50%, var(--line));
+}
+#heute .hkachel.fehlt .hkv b {
+  color: var(--warn);
+}
+#heute .hkachel.fehlt .hkbar i {
+  background: var(--warn);
+}
+#heute .hkhinweis {
+  font-size: 0.64rem;
+  color: var(--faint);
+  margin: 2px 2px 10px;
+}
+#heute .hleer {
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: var(--r);
+  padding: 12px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+#heute .hstreifen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+#heute .hpill,
+.invextra .invkachel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-align: left;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 9px 10px;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: var(--schatten);
+}
+#heute .hpill.heiss,
+.invextra .invkachel.heiss {
+  border-color: color-mix(in srgb, var(--warn) 50%, var(--line));
+  background: color-mix(in srgb, var(--warn) 8%, var(--surface));
+}
+#heute .hz,
+.invextra .hz {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  flex: none;
+  display: grid;
+  place-content: center;
+  background: var(--surface-3);
+  font-weight: 700;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+#heute .hpill.heiss .hz,
+.invextra .invkachel.heiss .hz {
+  background: var(--warn);
+  color: #fff;
+}
+#heute .htx,
+.invextra .htx {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+#heute .htx b,
+.invextra .htx b {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+#heute .htx span,
+.invextra .htx span {
+  font-size: 0.63rem;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#heute .htag {
+  padding-top: 12px;
+}
+#heute .htkopf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+#heute .htkopf h3 {
+  margin: 0;
+}
+#heute .htkopf span {
+  font-size: 0.7rem;
+  color: var(--faint);
+}
+#heute .hzeile {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  padding: 9px 0;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+#heute .hzeile:first-of-type {
+  border-top: 0;
+}
+#heute .hzeile.laeuft {
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  border-radius: 10px;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+#heute .hzeit {
+  width: 44px;
+  flex: none;
+  font-size: 0.76rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  padding-top: 1px;
+}
+#heute .hzeit i {
+  display: block;
+  font-style: normal;
+  font-size: 0.62rem;
+  color: var(--faint);
+  font-weight: 500;
+}
+#heute .hstrich {
+  width: 4px;
+  border-radius: 2px;
+  flex: none;
+}
+#heute .hin {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#heute .hin b {
+  font-size: 0.84rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#heute .hin span {
+  font-size: 0.68rem;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hst {
+  flex: none;
+  align-self: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--surface-3);
+  color: var(--muted);
+}
+.hst.ok {
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent);
+}
+.hst.offen {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+  color: var(--warn);
+}
+.hst.halb {
+  background: color-mix(in srgb, var(--info) 18%, transparent);
+  color: var(--info);
+}
+.hst.jetzt {
+  background: var(--accent);
+  color: #fff;
+}
+#heute .hleerzeile,
+.hfenster .hleerzeile {
+  font-size: 0.76rem;
+  color: var(--faint);
+  padding: 8px 0;
+}
+
+/* Fenster für Calls und Nachbereitung */
+.hfenster {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 0 env(safe-area-inset-bottom, 0px);
+}
+.hfenster[hidden] {
+  display: none;
+}
+.hfbox {
+  width: 100%;
+  max-width: 560px;
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  padding: 12px 14px 22px;
+}
+.hfgriff {
+  width: 38px;
+  height: 4px;
+  border-radius: 99px;
+  background: var(--line);
+  margin: 0 auto 10px;
+}
+.hfkopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.hfkopf b {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+}
+.hfkopf span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--faint);
+  margin-top: 2px;
+}
+.hfzeile {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 11px;
+  margin-bottom: 6px;
+  color: var(--text);
+  font: inherit;
+}
+.hfzeile.knopf {
+  cursor: pointer;
+}
+.hfin {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.hfin b {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.hfin span {
+  font-size: 0.67rem;
+  color: var(--faint);
+}
+.hfakt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  justify-content: flex-end;
+}
+.hfnotiz {
+  font-size: 0.68rem;
+  color: var(--faint);
+  margin-top: 6px;
+}
+
+/* ---------- Auswertung: Zeitraum an den Fuß ---------- */
+#page-auswertungen.active {
+  display: flex;
+  flex-direction: column;
+}
+#page-auswertungen .rangebar {
+  order: 2;
+  position: sticky;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 5;
+  margin: 10px 0 0;
+  padding: 7px 9px;
+  gap: 8px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--schatten);
+}
+#page-auswertungen .rangebar .rl {
+  font-size: 0.64rem;
+  color: var(--faint);
+}
+#page-auswertungen .rangebar .seg button {
+  padding: 5px 8px;
+  font-size: 0.68rem;
+}
+#page-auswertungen #ausw {
+  order: 1;
+}
+
+/* ---------- Inventur ---------- */
+.invextra {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.invschalter {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 3px;
+}
+.invschalter button {
+  flex: 1;
+  padding: 8px 6px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.invschalter button[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+.invknoepfe {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.invextra .invkachel.an {
+  border-color: var(--accent);
+}
+.invzeile .invminlbl {
+  display: block;
+  font-style: normal;
+  font-size: 0.6rem;
+  color: var(--faint);
+  margin-top: 1px;
+}
+.invzeile.unter {
+  background: color-mix(in srgb, var(--warn) 9%, transparent);
+}
+.invzeile.unter .invminlbl {
+  color: var(--warn);
+  font-weight: 600;
+}
+.invzeile .invminknopf {
+  margin-left: 6px;
+}
+.invzeile .invminknopf.an {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+table.invnach td small {
+  display: block;
+  font-size: 0.6rem;
+  color: var(--faint);
+}
+
+/* ---------- Teamprovision ---------- */
+.tprov .tpgesamt {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 12px;
+}
+.tprov .tpgesamt div {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.tprov .tpgesamt span {
+  font-size: 0.62rem;
+  color: var(--faint);
+}
+.tprov .tpgesamt b {
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.tprov .tpgesamt .hero {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+}
+.tprov .tpgesamt .hero b {
+  color: var(--accent);
+}
+.tprov .hinweis.warn {
+  color: var(--warn);
+}
+
+/* ---------- Korrekturen ---------- */
+
+/*
+ * Die alte CSS setzt in jedem Abschnitt text-align:center !important.
+ * Listen und Zeilen lesen sich linksbündig aber deutlich besser.
+ */
+#heute .htkopf,
+#heute .htkopf *,
+#heute .hzeile,
+#heute .hzeile *,
+#heute .hkachel,
+#heute .hkachel *,
+#heute .hpill,
+#heute .hpill *,
+#heute .hleer,
+#heute .hkhinweis,
+.hfbox,
+.hfbox *,
+.invextra,
+.invextra * {
+  text-align: left !important;
+}
+#heute .hzeile .hst {
+  text-align: center !important;
+}
+#heute .hin {
+  align-items: flex-start;
+}
+#heute .htkopf h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Heute und Planer: am Handy kein grosses Logo mehr – der Tag braucht den Platz */
+@media (orientation: portrait), (max-width: 699px) {
+  body[data-page="heute"] .wrap > .hero > h1,
+  body[data-page="heute"] .wrap > .hero > .logomark,
+  body[data-page="heute"] .wrap > .hero > .streifen,
+  body[data-page="planer"] .wrap > .hero > h1,
+  body[data-page="planer"] .wrap > .hero > .logomark,
+  body[data-page="planer"] .wrap > .hero > .streifen {
+    display: none;
+  }
+  body[data-page="heute"] .wrap > .hero,
+  body[data-page="planer"] .wrap > .hero {
+    padding: 6px 0 10px;
+    text-align: left;
+    align-items: flex-start;
+  }
+  body[data-page="heute"] .pagetitle,
+  body[data-page="planer"] .pagetitle {
+    background: none;
+    padding: 0;
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    text-transform: none;
+    color: var(--text);
+  }
+}
+
+/*
+ * Planer: die Provisionsübersicht oben ist raus, die alte Farblegende auch
+ * (die neue steht direkt unter dem Plan)
+ */
+#uebPlaner {
+  display: none !important;
+}
+#page-planer:has(#grid.gp) details.legend {
+  display: none;
+}
+
+/* Inventur: lange Beschriftungen in den Kacheln dürfen umbrechen */
+.invextra .htx b,
+.invextra .htx span {
+  white-space: normal;
+}
+
+/* Zeitraumleiste einzeilig: Beschriftung links, Knöpfe waagerecht */
+#page-auswertungen .rangebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  margin-bottom: 0;
+}
+#page-auswertungen .rangebar .rl {
+  display: inline;
+  margin: 0;
+  flex: none;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+}
+#page-auswertungen .rangebar .seg {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  display: flex !important;
+  flex-wrap: nowrap;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  grid-template-columns: none;
+}
+#page-auswertungen .rangebar .seg::-webkit-scrollbar {
+  display: none;
+}
+#page-auswertungen .rangebar .seg button {
+  flex: 1 0 auto;
+  white-space: nowrap;
+  min-height: 32px;
+}

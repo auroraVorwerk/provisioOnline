@@ -1,0 +1,1204 @@
+/**
+ * Heute, Provision, Planer, Nachbereitung, Menü
+ *
+ * Abschnitte als Überschriften mit Zeilen und Haarlinien; Bewegung nur per transform/opacity.
+ */
+
+/*
+ * ---------------------------------------------------------------
+ * Statistik · 3D-Säulen, farbig nach Tätigkeit
+ * ---------------------------------------------------------------
+ */
+html body .msaeulen.u3szene {
+  height: 210px;
+  gap: 16px;
+  padding: 22px 10px 0 4px;
+  border-bottom: 0;
+  perspective: 900px;
+  perspective-origin: 50% 0;
+  position: relative;
+}
+html body .msaeulen.u3szene::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--line-soft);
+}
+.u3sp {
+  transform-style: preserve-3d;
+}
+.u3box {
+  position: relative;
+  width: 100%;
+  flex: none;
+  transform-style: preserve-3d;
+  transform: rotateX(-12deg) rotateY(-24deg);
+  transform-origin: bottom center;
+}
+.u3box.mleer {
+  height: 3px;
+  background: var(--fill);
+  border-radius: 2px;
+  transform: none;
+}
+.u3box > i {
+  position: absolute;
+  display: block;
+}
+.u3v {
+  inset: 0;
+  background: var(--g);
+  transform: translateZ(8px);
+  border-radius: 3px 3px 0 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.u3s {
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 16px;
+  margin-left: -8px;
+  background: var(--g);
+  transform: rotateY(90deg);
+  filter: brightness(0.68);
+}
+.u3t {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 16px;
+  margin-top: -8px;
+  background: var(--oben);
+  transform: rotateX(90deg);
+  filter: brightness(1.22);
+}
+.u3box.plan {
+  opacity: 0.42;
+}
+.u3sp.heute .u3v {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 0 0 2px var(--bg),
+    0 0 0 3.5px var(--accent);
+}
+html body .u3sp .mwert {
+  position: static !important;
+  transform: none !important;
+  margin-bottom: 8px;
+  text-align: center;
+}
+html[data-anim="voll"] .mstat.mlauf .u3box:not(.mleer) {
+  animation: u3hoch 1s cubic-bezier(0.34, 1.25, 0.64, 1) both;
+  animation-delay: calc(var(--mi) * 60ms + 0.15s);
+}
+@keyframes u3hoch {
+  from {
+    transform: rotateX(-12deg) rotateY(-24deg) scaleY(0.02);
+  }
+  to {
+    transform: rotateX(-12deg) rotateY(-24deg);
+  }
+}
+html body .mchart .machse {
+  gap: 16px;
+  padding: 0 10px 0 4px;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Gemeinsame Bausteine: Abschnitt, Überzeile, Zeile, Knopf
+ * ---------------------------------------------------------------
+ */
+.usek {
+  margin: 0 0 30px;
+}
+.uue {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.uue.warm {
+  color: #f5a524;
+}
+.uh {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.uliste {
+  border-top: 1px solid var(--line-soft);
+}
+.ureihe {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 15px;
+}
+.ureihe span {
+  color: var(--muted);
+}
+.ureihe b {
+  font-weight: 700;
+  text-align: right;
+}
+.ureihe b.gruen,
+.uabschluss b.gruen {
+  color: var(--accent);
+}
+.ureihe b.warm {
+  color: #f5a524;
+}
+.uzeile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ustrich {
+  flex: none;
+  width: 4px;
+  align-self: stretch;
+  min-height: 38px;
+  border-radius: 2px;
+}
+.utext {
+  flex: 1;
+  min-width: 0;
+}
+.utext b {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+}
+.utext span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.uwann {
+  flex: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.uwann.jetzt {
+  color: #f5a524;
+}
+.ubtn {
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ubtn.primaer {
+  background: var(--accent);
+  color: #0d1210;
+}
+.ubtn:active {
+  transform: scale(0.98);
+}
+.ufertig {
+  margin: 14px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+html[data-anim="voll"] .ufertig {
+  animation: uRein 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes uRein {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Heute
+ * ---------------------------------------------------------------
+ */
+.uoben {
+  position: relative;
+}
+.ubogen {
+  position: relative;
+  max-width: 460px;
+  margin: -6px auto 18px;
+}
+.ubogen svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.ubachse {
+  font-size: 11px;
+  fill: var(--faint, var(--muted));
+  font-weight: 600;
+}
+.ubgross {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  fill: var(--text);
+}
+.ubklein {
+  font-size: 13px;
+  fill: var(--muted);
+  font-weight: 500;
+}
+.ubsonne {
+  fill: #ffc24a;
+}
+body.hell .ubsonne {
+  fill: #f5a524;
+}
+html[data-anim="voll"] .ubspur {
+  animation: uSpur 1.8s 0.15s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+@keyframes uSpur {
+  from {
+    stroke-dashoffset: 470;
+  }
+  to {
+    stroke-dashoffset: var(--rest);
+  }
+}
+html[data-anim="voll"] .ubglut {
+  animation: uGlut 3.2s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes uGlut {
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+html[data-anim="voll"] .ubsonne {
+  animation: uSonne 1.2s 0.9s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes uSonne {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+}
+html[data-anim="voll"] .ubpunkt {
+  animation: uPunkt 0.5s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes uPunkt {
+  from {
+    transform: scale(0);
+  }
+}
+.uabschluss {
+  padding-bottom: 6px;
+}
+html[data-anim="voll"] .uabschluss {
+  animation: uRein 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.unaechst .uzeile {
+  border-top: 1px solid var(--line-soft);
+}
+
+/* Kacheln auf Heute werden zu ruhigen Zeilen */
+html body #heute .hstreifen {
+  display: block !important;
+  margin: 0 0 30px !important;
+  border-top: 1px solid var(--line-soft);
+}
+html body #heute .hpill {
+  display: flex !important;
+  width: 100% !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 12px 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-align: left !important;
+}
+html body #heute .hpill .hz {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  flex: none;
+}
+html body #heute .hpill .htx b {
+  font-size: 16px !important;
+}
+html body .mlz-heutekarte {
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--line-soft) !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+  border-radius: 0 !important;
+  padding: 14px 0 !important;
+  margin: 0 0 30px !important;
+}
+.uvorb .uklein .mbuehne {
+  transform: scale(0.72);
+  transform-origin: top center;
+  margin-bottom: -60px;
+}
+.uvorb .uklein {
+  margin: 0 !important;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Provision · Münzturm und Was-wäre-wenn
+ * ---------------------------------------------------------------
+ */
+.umuenzen {
+  position: relative;
+  height: 230px;
+  margin: 0 auto 6px;
+  max-width: 300px;
+}
+.umboden {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 170px;
+  height: 30px;
+  margin-left: -85px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(233, 196, 106, 0.35), transparent 70%);
+}
+.umstapel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  top: 0;
+}
+.umuenze {
+  position: absolute;
+  left: 50%;
+  width: 124px;
+  height: 40px;
+  margin-left: -62px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 40% 35%, #ffe9a8, #e9c46a 45%, #b8892b);
+  box-shadow:
+    0 6px 0 #8e6a1f,
+    0 8px 12px rgba(0, 0, 0, 0.3);
+}
+.umuenze::after {
+  content: "";
+  position: absolute;
+  inset: 8px 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+}
+html[data-anim="voll"] .umuenze {
+  animation: uFall 0.7s cubic-bezier(0.34, 1.35, 0.64, 1) backwards;
+}
+@keyframes uFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -260px, 0);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
+}
+.uwenn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px auto 0;
+  max-width: 420px;
+  padding: 10px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+.urund {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  font-size: 24px;
+  cursor: pointer;
+}
+.urund:active {
+  transform: scale(0.9);
+}
+.uwmitte {
+  flex: 1;
+  text-align: center;
+}
+.uwmitte span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.uwmitte b {
+  display: block;
+  font-size: 17px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.uwtipp {
+  text-align: center !important;
+  margin: 12px auto 0;
+  max-width: 420px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.uwtipp.nah {
+  color: var(--accent);
+}
+.uwtipp b {
+  color: var(--text);
+}
+html body #prov .klappkopf {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+}
+html body #prov .klappkopf > span:first-child {
+  flex: 1;
+}
+.ksum {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+html body #prov .klappkopf .kp {
+  font-size: 0 !important;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  position: relative;
+}
+html body #prov .klappkopf .kp::after {
+  content: "";
+  position: absolute;
+  inset: 1px 3px 1px 1px;
+  border-right: 2.2px solid var(--muted);
+  border-bottom: 2.2px solid var(--muted);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.3s;
+}
+html body #prov .klappsec.zu .klappkopf .kp::after {
+  transform: rotate(-45deg);
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Planer · Verschieben und Ortswechsel
+ * ---------------------------------------------------------------
+ */
+body.schiebt #grid .slot.uzielfrei {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 10px;
+}
+body.schiebt #grid .slot.uzielbelegt {
+  opacity: 0.45;
+}
+body.schiebt #grid .slot.uhier {
+  background: color-mix(in srgb, var(--accent) 22%, transparent) !important;
+  position: relative;
+}
+body.schiebt #grid .slot.uhier::after {
+  content: attr(data-vorschau);
+  position: absolute;
+  inset: 4px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0d1210;
+  background: var(--accent);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.uwackeln {
+  animation: uWackel 0.4s;
+}
+@keyframes uWackel {
+  20% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+.uwechsel {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #f5a524;
+  color: #0d1210;
+  font-size: 10px;
+  font-weight: 800;
+  pointer-events: none;
+  z-index: 3;
+}
+.utoast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(110px + env(safe-area-inset-bottom));
+  z-index: 9999;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: rgba(30, 36, 33, 0.96);
+  color: #f2f5f3;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  transform: translate3d(-50%, 20px, 0);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s;
+}
+.utoast.da {
+  transform: translate3d(-50%, 0, 0);
+  opacity: 1;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Termin-Modus
+ * ---------------------------------------------------------------
+ */
+.utmodus {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  transform: translate3d(0, 100%, 0);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.utmodus.da {
+  transform: none;
+}
+body.utm-an .tabbar {
+  display: none !important;
+}
+.utmkopf {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: calc(14px + env(safe-area-inset-top)) 20px 10px;
+}
+.utmkopf .uue {
+  flex: 1;
+}
+.utmzu {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--fill);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+}
+.utmuhr {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+.utminhalt {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 20px 30px;
+  max-width: 680px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+.utmname {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.utmsub {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: var(--muted);
+}
+.utmhinweis {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.utmaktion {
+  display: flex;
+  gap: 10px;
+}
+.utmaktion .ubtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  height: 44px;
+}
+.utmcheck {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 13px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+.utmcheck i {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--line);
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+.utmcheck.an i {
+  background: var(--accent);
+  box-shadow: none;
+}
+.utmcheck.an i::after {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 11px;
+  margin: 4px 0 0 8.5px;
+  border-right: 2.4px solid #0d1210;
+  border-bottom: 2.4px solid #0d1210;
+  transform: rotate(45deg);
+}
+html[data-anim="voll"] .utmcheck.an i {
+  animation: uPop 0.35s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+@keyframes uPop {
+  from {
+    transform: scale(0.6);
+  }
+}
+.utmzahl {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.utmzahl .urund {
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+}
+.utmzahl b {
+  min-width: 18px;
+  text-align: center;
+  color: var(--text);
+  font-size: 17px;
+}
+.utmeinwand {
+  border-bottom: 1px solid var(--line-soft);
+}
+.utmeinwand summary {
+  list-style: none;
+  padding: 14px 0;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.utmeinwand summary::-webkit-details-marker {
+  display: none;
+}
+.utmeinwand summary::after {
+  content: "+";
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1;
+}
+.utmeinwand[open] summary::after {
+  content: "–";
+}
+.utmeinwand p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+#utmNotiz {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+.utmfuss {
+  padding: 12px 20px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line-soft);
+  max-width: 680px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+.utmfuss .ubtn {
+  margin: 0;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Trichter
+ * ---------------------------------------------------------------
+ */
+#trichter .utseg {
+  margin-bottom: 22px;
+}
+.utkopf {
+  display: flex;
+  gap: 28px;
+  margin-bottom: 22px;
+}
+.utkopf b {
+  display: block;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+.utkopf span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.utrichter {
+  max-width: 640px;
+}
+.utstufe {
+  position: relative;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.utbalken {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--b);
+  transform: translateX(-50%);
+  border-radius: 14px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 88%, #fff 12%),
+    color-mix(in srgb, var(--accent) 70%, #000 30%)
+  );
+  opacity: calc(1 - var(--i) * 0.07);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+html[data-anim="voll"] .utbalken {
+  animation: uBreit 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(var(--i) * 80ms);
+}
+@keyframes uBreit {
+  from {
+    transform: translateX(-50%) scaleX(0.05);
+    opacity: 0;
+  }
+}
+.uttext {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #0d1210;
+}
+.uttext b {
+  font-size: 20px;
+  font-weight: 800;
+}
+.uttext span {
+  font-size: 14px;
+  font-weight: 700;
+}
+.utsub {
+  margin: 6px 0 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.utpfeil {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 8px 0;
+}
+.utpfeil b {
+  color: var(--text);
+}
+.uteinsicht {
+  margin-top: 30px;
+}
+.uteinsicht p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Urlaub
+ * ---------------------------------------------------------------
+ */
+#grid .slot.uurlaub {
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 8px,
+    color-mix(in srgb, #7fb2ff 14%, transparent) 8px 16px
+  ) !important;
+}
+.gpkopf .gptag.uurlaub {
+  color: #7fb2ff !important;
+}
+.gpkopf .gptag.uurlaub::after {
+  content: "frei";
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #7fb2ff;
+}
+.uurlaubzeile {
+  margin-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Nachbereitung Schritt für Schritt
+ * ---------------------------------------------------------------
+ */
+.uwiz .uaus {
+  display: none !important;
+}
+.uwiz .nbkopf {
+  display: none !important;
+}
+.uwiz .nbblock {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.uwiz .uwizalt {
+  display: none !important;
+}
+.uwizkopf {
+  margin: 2px 0 18px;
+}
+.uwizzeile {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.uwizzeile span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.uwizzeile b {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.uwizbalken {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--fill);
+  margin-top: 10px;
+  overflow: hidden;
+}
+.uwizbalken i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html[data-anim="voll"] .uwizrein {
+  animation: uSchritt 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes uSchritt {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+  }
+}
+.uwiz .seg button {
+  min-height: 48px;
+  font-size: 16px !important;
+}
+.uwizreihe .btn {
+  flex: 1;
+}
+.uwizlink {
+  display: block;
+  margin: 10px auto 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/*
+ * ---------------------------------------------------------------
+ * Menü in Gruppen
+ * ---------------------------------------------------------------
+ */
+.umsuche {
+  padding: 4px 4px 10px;
+}
+.umsuche input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  padding: 0 14px;
+}
+.umgruppe {
+  padding: 16px 12px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint, var(--muted));
+}
+#navHaupt > .umgruppe:first-of-type {
+  padding-top: 6px;
+}
+
+/* ---------- Detailkorrekturen ---------- */
+/* Heute: Texte links, Liste ruhig */
+html body #heute .hpill .htx {
+  text-align: left !important;
+  align-items: flex-start !important;
+}
+html body #heute .hpill .htx span {
+  font-size: 13px !important;
+  color: var(--muted) !important;
+}
+html body #heute .htkopf {
+  justify-content: space-between !important;
+  text-align: left !important;
+}
+html body #heute .htkopf h3 {
+  text-align: left !important;
+  font-size: 22px !important;
+}
+html body #heute .hzeile {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
+html body #heute .hzeile .hin {
+  text-align: left !important;
+  align-items: flex-start !important;
+  flex: 1;
+  min-width: 0;
+}
+html body #heute .hzeile.laeuft {
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+.uvorb .uklein .mbuehne {
+  display: none !important;
+}
+.uvorb .uklein .munter {
+  font-size: 17px !important;
+  text-align: left !important;
+  margin: 0 0 6px !important;
+}
+.uvorb .uklein .munter b {
+  font-size: 28px;
+  font-weight: 800;
+  display: block;
+  letter-spacing: -0.02em;
+}
+
+/* Provision: zwei Spalten auf dem iPad, Team ohne Kacheln */
+html body .tpgesamt {
+  gap: 0 !important;
+}
+html body .tpgesamt > * {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Statistik am Handy: Tage als ruhige Liste statt Kartenstapel */
+html body .smtag {
+  background: transparent !important;
+  color: var(--text) !important;
+  padding: 0 !important;
+  margin: 26px 0 4px !important;
+  font-size: 20px !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+  border-radius: 0 !important;
+}
+html body .smkarte {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 14px 0 !important;
+  margin: 0 !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+html body .smkarte.hatumsatz {
+  box-shadow: none !important;
+  padding-left: 14px !important;
+  border-left: 3px solid var(--accent) !important;
+}
+html body .smsumme {
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 16px 0 !important;
+  border-top: 1px solid var(--line-soft);
+  text-align: left !important;
+}
+html body .smsumme b {
+  font-family: inherit !important;
+  font-size: 18px !important;
+}
+
+/* Statistik-Tabelle: Haarlinien statt Kästchen */
+html body .stat th,
+html body .stat td {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  border-bottom: 1px solid var(--line-soft) !important;
+}
+html body .stat thead tr:not(.grp) th:not(.vh) {
+  background: transparent !important;
+  color: var(--muted) !important;
+}
+html body .stat th.vh {
+  border-radius: 10px 10px 0 0 !important;
+  border-bottom: 0 !important;
+}
+html body .stat td.sticky,
+html body .stat th.sticky {
+  background: var(--bg) !important;
+}
+
+/* Nachbereitung: Auswahlfelder über die volle Breite */
+.uwiz .nbblock:not(.uaus) {
+  display: block !important;
+}
+.uwiz .nbinhalt {
+  padding: 0 !important;
+  width: 100% !important;
+}
+.uwiz .sect,
+.uwiz .grp,
+.uwiz .seg {
+  width: 100% !important;
+  box-sizing: border-box;
+}
+.uwiz .seg {
+  display: flex !important;
+}
+.uwiz .seg > button {
+  flex: 1 1 0 !important;
+  min-width: 0;
+}
+.uwiz .checks.stack {
+  width: 100%;
+}

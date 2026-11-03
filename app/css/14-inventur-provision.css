@@ -1,0 +1,54 @@
+/**
+ * Inventur und Provision
+ *
+ * Umschalter der Inventur und Summenkacheln der Provision.
+ */
+
+/* Inventur: Umschalter "Alles zeigen / Nur Vorhandene" als gleich breite Hälften */
+.invschalter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+}
+.invschalter button {
+  min-width: 0;
+  text-align: center !important;
+  justify-content: center;
+  padding: 10px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-radius: 9px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Provision: die drei Summenkacheln gleich hoch, Text mittig */
+.tprov .tpgesamt div {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 2px;
+  min-height: 64px;
+}
+.tprov .tpgesamt span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Aufklappbare Abschnitte: kein eckiger grauer Kasten beim Antippen (iOS) */
+.klappkopf {
+  -webkit-tap-highlight-color: transparent;
+  border-radius: inherit;
+}
+.klappkopf:active,
+.klappkopf:focus {
+  background: transparent;
+  outline: none;
+}
+.klappkopf:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

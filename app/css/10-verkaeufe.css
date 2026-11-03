@@ -1,0 +1,62 @@
+/**
+ * Verkäufe
+ *
+ * Eine Zeile je Verkauf, Monate als Abschnitte.
+ */
+.vkzeile {
+  display: grid;
+  grid-template-columns: 44px 4px minmax(0, 1fr) auto auto;
+  gap: 9px;
+  align-items: center;
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+.vkzeile:first-of-type {
+  border-top: 0;
+}
+.vkdatum {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-align: left !important;
+}
+.vkstrich {
+  width: 4px;
+  height: 30px;
+  border-radius: 2px;
+}
+.vkin {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: left !important;
+}
+.vkin b {
+  font-size: 0.82rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vkin span {
+  font-size: 0.66rem;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vkzahl {
+  text-align: right !important;
+  min-width: 52px;
+}
+.vkzahl b {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.82rem;
+}
+.vkzahl i {
+  display: block;
+  font-style: normal;
+  font-size: 0.56rem;
+  color: var(--faint);
+}

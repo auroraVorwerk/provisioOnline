@@ -1,0 +1,697 @@
+/**
+ * Listen- und Seitenanimationen
+ *
+ * Stile zu 49-listen-motion.js.
+ */
+:root {
+  --mfeder: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mweich: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Listen ---------- */
+html:not([data-anim="aus"]) .mneu {
+  animation: mNeu 0.8s var(--mfeder) both;
+}
+@keyframes mNeu {
+  0% {
+    opacity: 0;
+    transform: translateY(-26px) scale(0.94);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  55% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  100% {
+    transform: none;
+    box-shadow: 0 0 0 16px transparent;
+  }
+}
+html:not([data-anim="aus"]) .mblitz {
+  animation: mBlitz 1.1s ease-out;
+}
+@keyframes mBlitz {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent);
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  100% {
+    box-shadow: 0 0 0 18px transparent;
+    outline-color: transparent;
+  }
+}
+html:not([data-anim="aus"]) .mrein {
+  animation: mRein 0.5s var(--mfeder) both;
+  animation-delay: calc(var(--mi, 0) * 35ms);
+}
+@keyframes mRein {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+html[data-anim="ruhig"] .mneu,
+html[data-anim="ruhig"] .mrein {
+  animation-name: mBlende;
+}
+@keyframes mBlende {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* gelöschte Karte: Geist klappt weg */
+.mgeistkarte {
+  position: fixed !important;
+  z-index: 30;
+  margin: 0 !important;
+  pointer-events: none;
+  box-sizing: border-box;
+  animation: mGeist 0.5s cubic-bezier(0.55, 0, 0.8, 0.2) forwards;
+}
+html[data-anim="voll"] .mgeistkarte {
+  animation-name: mGeistVoll;
+}
+@keyframes mGeist {
+  to {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes mGeistVoll {
+  0% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.9;
+    transform: translateX(0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(80px) rotate(2.5deg) scale(0.96);
+    filter: blur(3px);
+  }
+}
+
+/* ---------- Wiedervorlage und Potenzialliste ---------- */
+html[data-anim="voll"] .pcard.faellig {
+  animation: mGlut 2.4s 1s ease-in-out infinite;
+}
+@keyframes mGlut {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+}
+.pcard {
+  position: relative;
+}
+.pcard.merledigt {
+  pointer-events: none;
+}
+.pcard.merledigt .nm {
+  position: relative;
+}
+.pcard.merledigt > *:not(.mhaken) {
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+.pcard.merledigt .nm::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  animation: mStrich 0.35s 0.12s var(--mweich) both;
+}
+@keyframes mStrich {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.mhaken {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 34px;
+  height: 34px;
+  z-index: 2;
+}
+.mhaken svg {
+  width: 100%;
+  height: 100%;
+}
+.mhaken circle {
+  fill: var(--accent);
+  transform-origin: center;
+  animation: mKreis 0.4s var(--mfeder) both;
+}
+.mhaken path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 20;
+  animation: mHaken 0.3s 0.18s ease-out both;
+}
+@keyframes mKreis {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes mHaken {
+  from {
+    stroke-dashoffset: 20;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- Neue Empfehlungen ---------- */
+.m7 {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  height: 20px;
+  padding: 0 9px 0 7px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+.m7 i {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+html:not([data-anim="aus"]) .m7 i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: mPuls 1.6s ease-out infinite;
+}
+@keyframes mPuls {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* ---------- Wochenwechsel ---------- */
+.mgleitL {
+  animation: mGleitL 0.45s var(--mweich);
+}
+.mgleitR {
+  animation: mGleitR 0.45s var(--mweich);
+}
+@keyframes mGleitL {
+  from {
+    opacity: 0;
+    transform: translateX(-46px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mGleitR {
+  from {
+    opacity: 0;
+    transform: translateX(46px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Ziele ---------- */
+.zziel {
+  position: relative;
+  overflow: hidden;
+}
+html[data-anim="voll"] .zziel.mfast {
+  animation: mSchimmer 2.6s 1.2s ease-in-out infinite;
+}
+@keyframes mSchimmer {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 24px 0 color-mix(in srgb, #f5a524 35%, transparent);
+  }
+}
+html[data-anim="voll"] .zziel.mfast .zbalken i {
+  background: linear-gradient(90deg, var(--accent), #f5a524);
+}
+.zbalken i {
+  position: relative;
+  overflow: hidden;
+}
+html[data-anim="voll"] .zbalken i::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%);
+  animation: mGlanz 2.6s 1.4s ease-in-out infinite;
+}
+@keyframes mGlanz {
+  to {
+    transform: translateX(100%);
+  }
+}
+html[data-anim="voll"] .mfrisch .zhaken {
+  display: inline-block;
+  animation: mPop 0.6s 0.5s var(--mfeder) both;
+}
+@keyframes mPop {
+  from {
+    transform: scale(0) rotate(-12deg);
+  }
+  to {
+    transform: none;
+  }
+}
+html[data-anim="voll"] .mfrisch .zziel.erreicht {
+  animation: mErreicht 1.4s 0.4s ease-out;
+}
+@keyframes mErreicht {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 22px transparent;
+  }
+}
+html[data-anim="voll"] .mfrisch .zstufe.an {
+  animation: mPop 0.5s var(--mfeder) both;
+}
+
+/* ---------- Zählzeilen: +1 ---------- */
+.mplusfrei {
+  position: fixed !important;
+  z-index: 60;
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-weight: 800;
+  color: var(--accent);
+  animation: mAufstieg 0.75s var(--mweich) forwards;
+}
+.mplusfrei.minus {
+  color: #e5484d;
+}
+@keyframes mAufstieg {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -38px) scale(1.15);
+  }
+}
+
+/* ---------- Jahresrückblick ---------- */
+html:not([data-anim="aus"]) .bpaar i.mhoch {
+  transform-origin: bottom;
+  animation: mHoch 0.9s var(--mfeder) both;
+  animation-delay: calc(var(--mi, 0) * 50ms);
+}
+html:not([data-anim="aus"]) .bpaar i.bvor.mhoch {
+  animation-delay: calc(var(--mi, 0) * 50ms + 80ms);
+}
+@keyframes mHoch {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+.bpaar {
+  position: relative;
+}
+.bpaar.mbest .bjetzt {
+  background: linear-gradient(#f5a524, var(--accent));
+}
+.bpaar.mbest .bjetzt {
+  position: relative;
+  overflow: visible;
+}
+.bpaar.mbest .bjetzt::before {
+  content: "★";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(100% + 3px);
+  color: #f5a524;
+  font-size: 12px;
+  line-height: 1;
+  animation: mStern 0.6s 0.9s var(--mfeder) both;
+}
+@keyframes mStern {
+  from {
+    transform: translateX(-50%) scale(0) rotate(-90deg);
+  }
+  to {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+/* ---------- Auswertung ---------- */
+html[data-anim="voll"] .mwort {
+  display: inline-block;
+  animation: mWort 0.35s var(--mweich) both;
+  animation-delay: calc(var(--mi, 0) * 28ms + 250ms);
+}
+@keyframes mWort {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---------- Hilfe ---------- */
+details.faq,
+details.legend {
+  overflow: hidden;
+}
+.faq summary::after {
+  transition: transform 0.35s var(--mfeder);
+}
+html:not([data-anim="aus"]) .faq[open]:not(.mzu) summary::after {
+  transform: rotate(180deg);
+}
+html:not([data-anim="aus"]) .faq[open]:not(.mzu) > p {
+  animation: mRein 0.4s 0.08s var(--mweich) both;
+}
+.faq[open]:not(.mzu) {
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-2));
+}
+.faq {
+  transition: background 0.3s;
+}
+
+/* ---------- Themenwechsel (View Transitions) ---------- */
+html.mthemawechsel::view-transition-old(root),
+html.mthemawechsel::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.mthemawechsel::view-transition-new(root) {
+  animation: mKreisblende 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+@keyframes mKreisblende {
+  from {
+    clip-path: circle(0 at var(--mkx) var(--mky));
+  }
+  to {
+    clip-path: circle(var(--mkr) at var(--mkx) var(--mky));
+  }
+}
+
+/* Schalter federn */
+.schalter .knopf {
+  transition:
+    transform 0.45s var(--mfeder),
+    width 0.2s,
+    background 0.3s;
+}
+.schalter:active .knopf {
+  width: calc(var(--kb, 22px) + 6px);
+}
+/* gewählte Knöpfe (Wochen, Gründe, Filter) springen leicht */
+html[data-anim="voll"] .filterchips button,
+html[data-anim="voll"] .chips button,
+html[data-anim="voll"] #sheet [aria-pressed] {
+  transition:
+    transform 0.35s var(--mfeder),
+    background 0.25s,
+    color 0.25s,
+    border-color 0.25s;
+}
+html[data-anim="voll"] .filterchips button[aria-pressed="true"],
+html[data-anim="voll"] #sheet .checks button[aria-pressed="true"] {
+  transform: scale(1.05);
+}
+
+/* Vorschau der Bewegungsstufe in den Einstellungen */
+#animWahl .seg {
+  position: relative;
+}
+#animWahl::after {
+  content: "";
+  display: block;
+  height: 46px;
+  margin-top: 12px;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle 8px at 30% 70%, #2bbe6e 98%, transparent),
+    radial-gradient(circle 8px at 50% 70%, #3b9eff 98%, transparent),
+    radial-gradient(circle 8px at 70% 70%, #f5a524 98%, transparent),
+    color-mix(in srgb, var(--faint) 10%, transparent);
+  background-repeat: no-repeat;
+}
+html[data-anim="voll"] #animWahl::after {
+  animation: mHuepf 0.9s var(--mfeder) infinite alternate;
+}
+html[data-anim="ruhig"] #animWahl::after {
+  animation: mAtmen 1.6s ease-in-out infinite alternate;
+}
+@keyframes mHuepf {
+  from {
+    background-position:
+      0 0,
+      0 0,
+      0 0,
+      0 0;
+  }
+  to {
+    background-position:
+      0 -14px,
+      0 -8px,
+      0 -16px,
+      0 0;
+  }
+}
+@keyframes mAtmen {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------- Löschbestätigung ---------- */
+#sheet.mgefahr header h3::before {
+  content: "!";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, #e5484d 22%, transparent);
+  color: #ff9ea1;
+  font-weight: 900;
+  vertical-align: middle;
+}
+html[data-anim="voll"] #sheet.mgefahr header h3::before {
+  animation: mAlarm 1.4s 0.3s ease-in-out infinite;
+}
+@keyframes mAlarm {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.5);
+  }
+  60% {
+    box-shadow: 0 0 0 10px rgba(229, 72, 77, 0);
+  }
+}
+.btn.mcountdown {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, #e5484d 25%, var(--surface-2)) !important;
+  border-color: #e5484d !important;
+  color: #fff !important;
+}
+.btn.mcountdown .mfill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: #e5484d;
+  animation: mFuellen 3s linear forwards;
+}
+.btn.mcountdown .mtext {
+  position: relative;
+  font-size: 0.82em;
+}
+@keyframes mFuellen {
+  to {
+    width: 100%;
+  }
+}
+
+/* ---------- Kundenhistorie, Duplikatwarnung ---------- */
+.grp.mzeitstrahl {
+  position: relative;
+  padding-left: 26px !important;
+}
+.grp.mzeitstrahl::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(var(--accent), #3b9eff);
+  transform-origin: top;
+}
+html:not([data-anim="aus"]) .grp.mzeitstrahl::before {
+  animation: mLinie 1.1s 0.1s var(--mweich) both;
+}
+@keyframes mLinie {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+.grp.mzeitstrahl .hzeile {
+  position: relative;
+}
+.grp.mzeitstrahl .hzeile::before {
+  content: "";
+  position: absolute;
+  left: -23px;
+  top: 10px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 3px solid var(--accent);
+}
+html:not([data-anim="aus"]) .grp.mzeitstrahl .hzeile {
+  animation: mRein 0.45s var(--mweich) both;
+  animation-delay: calc(var(--mi, 0) * 110ms + 120ms);
+}
+html:not([data-anim="aus"]) .grp.mzeitstrahl .hzeile::before {
+  animation: mKreis 0.4s var(--mfeder) both;
+  animation-delay: inherit;
+}
+
+html[data-anim="voll"] .kdhinweis:not(.uebernommen) {
+  animation: mWarn 0.7s var(--mfeder) both;
+}
+@keyframes mWarn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  40% {
+    opacity: 1;
+    transform: none;
+  }
+  55% {
+    transform: translateX(-6px);
+  }
+  70% {
+    transform: translateX(5px);
+  }
+  85% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+/* Fahrtenbuch: die Strecke fährt */
+.fbstrecke i {
+  display: inline-block;
+}
+html[data-anim="voll"] .fbstrecke i {
+  animation: mFahrt 1.8s ease-in-out infinite;
+}
+@keyframes mFahrt {
+  0%,
+  100% {
+    transform: translateX(-3px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(4px);
+    opacity: 1;
+  }
+}
+@media (max-width: 759px) {
+  @keyframes mFahrt {
+    0%,
+    100% {
+      transform: rotate(90deg) translateX(-3px);
+      opacity: 0.5;
+    }
+    50% {
+      transform: rotate(90deg) translateX(4px);
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-anim="voll"]) .mgeistkarte {
+    display: none;
+  }
+}

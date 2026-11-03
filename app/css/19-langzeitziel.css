@@ -1,0 +1,297 @@
+/**
+ * Langzeitziel
+ *
+ * Groß auf der Zielseite, kompakt auf Heute.
+ */
+
+/* --- Ziele: leerer Zustand ------------------------------------------- */
+.mlangziel {
+  margin: 4px 0 30px;
+}
+.mlz-leer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px dashed var(--line);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+.mlz-leer b {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+}
+.mlz-leer small {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.mlz-plus {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 500;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+/* --- Ziele: groß ------------------------------------------------------ */
+.mlz-kopf {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mlz-ueber {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.mlz-titel {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 2px;
+}
+.mlz-edit {
+  border: 0;
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.mlz-zahl {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 14px;
+}
+.mlz-zahl b {
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.mlz-zahl span {
+  font-size: 15px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.mlz-weg {
+  position: relative;
+  height: 14px;
+  margin: 18px 0 6px;
+  border-radius: 999px;
+  background: var(--fill);
+  overflow: visible;
+}
+.mlz-fuell {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--p);
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, #fff 0%), var(--accent));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent);
+  transform-origin: left center;
+  overflow: hidden;
+}
+html[data-anim="voll"] .mlz-fuell {
+  animation: mlzFuell 1.4s 0.25s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+@keyframes mlzFuell {
+  from {
+    transform: scaleX(0);
+  }
+}
+/* Glanz wandert einmal durch den Balken */
+.mlz-fuell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  opacity: 0;
+}
+html[data-anim="voll"] .mlz-fuell::after {
+  animation: mlzGlanz 1.6s 1.5s ease-in-out 2 backwards;
+}
+@keyframes mlzGlanz {
+  0% {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+.mlz-marke {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.mlz-marke.an {
+  background: rgba(255, 255, 255, 0.9);
+}
+/* Strich: wo du heute laut Zeitplan stehen müsstest */
+.mlz-heute {
+  position: absolute;
+  left: var(--z);
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: var(--text);
+  opacity: 0.55;
+}
+.mlz-weg.fertig .mlz-fuell {
+  background: linear-gradient(90deg, #e9c46a, #f5a524);
+}
+
+.mlz-fakten {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 18px;
+}
+.mlz-fakten b {
+  display: block;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.mlz-fakten span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.mlz-satz {
+  margin: 16px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.mlz-satz.gut {
+  color: var(--accent);
+}
+.mlz-bis {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--faint, var(--muted));
+}
+
+/* --- Heute: kompakt ---------------------------------------------------- */
+.mlz-heutekarte {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  margin: 6px 0 22px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--line-soft, var(--line));
+  background: var(--fill);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+html[data-anim="voll"] .mlz-heutekarte {
+  animation: mlzRein 0.7s 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+@keyframes mlzRein {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+}
+.mlz-hk-ring {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+}
+.mlz-hk-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.mlz-hk-ring circle {
+  fill: none;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+}
+.mlz-hk-spur {
+  stroke: var(--line);
+}
+.mlz-hk-wert {
+  stroke: var(--accent);
+  stroke-dasharray: 119.4;
+}
+.mlz-hk-ring span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.mlz-hk-text {
+  flex: 1;
+  min-width: 0;
+}
+.mlz-hk-text b {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+.mlz-hk-text span {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.mlz-hk-text small {
+  display: block;
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 4px;
+  font-weight: 600;
+}
+.mlz-hk-pfeil {
+  flex: none;
+  font-size: 24px;
+  color: var(--muted);
+  line-height: 1;
+}

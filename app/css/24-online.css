@@ -1,0 +1,47 @@
+/* Provisio Online – Zusätze */
+.lgmark .lgonline {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: #0b1a2b;
+  background: #6fe3a1;
+}
+.onzeile {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.onzeile span {
+  color: var(--muted, #9fb4cc);
+  font-size: 0.86rem;
+  text-align: right;
+}
+.onkf {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 0;
+}
+.onkf + .onkf {
+  border-top: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+}
+.onkf small {
+  display: block;
+  color: var(--muted, #9fb4cc);
+  margin-top: 2px;
+}
+.onkfk {
+  display: flex;
+  gap: 8px;
+}
+.onkfk .btn {
+  flex: 1;
+}

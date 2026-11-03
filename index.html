@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Provisio Online – installieren</title>
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+    <link rel="apple-touch-icon" href="icon-512.png" />
+    <meta name="theme-color" content="#0b1a2b" />
+    <style>
+      :root {
+        --bg1: #16304f;
+        --bg2: #0a1826;
+        --card: #112740;
+        --line: #20405f;
+        --text: #eaf1f9;
+        --muted: #9fb4cc;
+        --accent: #3b9bf0;
+        --amber: #f4b63f;
+      }
+      * {
+        margin: 0;
+        box-sizing: border-box;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        font-family: "Manrope", system-ui, -apple-system, sans-serif;
+        color: var(--text);
+        background: linear-gradient(165deg, var(--bg1), var(--bg2));
+        min-height: 100vh;
+        line-height: 1.55;
+        padding: max(28px, env(safe-area-inset-top)) 18px 56px;
+        display: flex;
+        justify-content: center;
+      }
+      .wrap {
+        width: 100%;
+        max-width: 560px;
+      }
+      header {
+        text-align: center;
+        margin: 22px 0 30px;
+      }
+      header img {
+        width: 104px;
+        height: 104px;
+        border-radius: 24px;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.4);
+      }
+      h1 {
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: -0.4px;
+        margin: 16px 0 4px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .open {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        background: var(--accent);
+        color: #06233f;
+        font-weight: 800;
+        font-size: 18px;
+        padding: 16px;
+        border-radius: 16px;
+        margin: 26px 0 10px;
+        box-shadow: 0 10px 26px rgba(59, 155, 240, 0.35);
+      }
+      .hint {
+        text-align: center;
+        color: var(--muted);
+        font-size: 13.5px;
+        margin-bottom: 26px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 20px 20px 8px;
+        margin-bottom: 18px;
+      }
+      .card h2 {
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+      .badge {
+        font-size: 12px;
+        font-weight: 700;
+        color: #06233f;
+        background: var(--amber);
+        padding: 3px 9px;
+        border-radius: 999px;
+      }
+      ol {
+        margin: 10px 0 14px;
+        padding-left: 22px;
+      }
+      li {
+        margin-bottom: 8px;
+      }
+      .k {
+        display: inline-block;
+        background: #0c1e31;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 1px 7px;
+        font-size: 13px;
+      }
+      .note {
+        background: #0e2236;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+        color: var(--muted);
+        font-size: 13.5px;
+      }
+      .note b {
+        color: var(--text);
+      }
+      footer {
+        text-align: center;
+        color: #6f88a6;
+        font-size: 12px;
+        margin-top: 26px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img src="icon-512.png" alt="Provisio Online" />
+        <h1>Provisio Online</h1>
+        <div class="sub">Dein Vertriebsplaner – auf iPhone und iPad abgeglichen, Ende-zu-Ende-verschlüsselt.</div>
+      </header>
+
+      <a class="open" href="app/index.html">Provisio Online öffnen</a>
+      <p class="hint">Öffne die App und lege sie dann auf deinen Home-Bildschirm – so läuft sie wie eine echte App.</p>
+
+      <div class="card">
+        <h2><span class="badge">iPhone / iPad</span> In Safari öffnen</h2>
+        <ol>
+          <li>Diese Seite in <b>Safari</b> öffnen und auf <b>„Provisio Online öffnen"</b> tippen.</li>
+          <li>Unten auf das <b>Teilen-Symbol</b> tippen (Quadrat mit Pfeil nach oben).</li>
+          <li><b>„Zum Home-Bildschirm"</b> wählen, dann <b>„Hinzufügen"</b>.</li>
+        </ol>
+        <p class="note">Wichtig: in <b>Safari</b> öffnen (nicht im In-App-Browser von WhatsApp o. Ä.), sonst fehlt „Zum Home-Bildschirm".</p>
+        <div style="height: 8px"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="badge">Android</span> In Chrome öffnen</h2>
+        <ol>
+          <li>Diese Seite in <b>Chrome</b> öffnen und auf <b>„Provisio Online öffnen"</b> tippen.</li>
+          <li>Oben rechts auf das <b>Menü</b> (<span class="k">⋮</span>) tippen.</li>
+          <li><b>„App installieren"</b> bzw. <b>„Zum Startbildschirm hinzufügen"</b> wählen.</li>
+        </ol>
+        <div style="height: 8px"></div>
+      </div>
+
+      <div class="note">
+        <b>So funktioniert's:</b> Registrieren geht nur mit einem <b>Einladungscode</b> deiner Teamleitung.
+        Deine Daten werden <b>auf dem Gerät verschlüsselt</b> und erst dann mit deinen anderen Geräten abgeglichen –
+        der Server in der EU (Paris) sieht nur unlesbare Daten, nie dein Passwort. Ohne Internet arbeitest du normal weiter.
+        Den <b>Wiederherstellungs-Code</b> beim Registrieren gut aufbewahren.
+      </div>
+
+      <footer>Provisio Online · Ende-zu-Ende-verschlüsselt · nicht mit Vorwerk verbunden</footer>
+    </div>
+  </body>
+</html>

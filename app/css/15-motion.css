@@ -1,0 +1,874 @@
+/**
+ * Motion
+ *
+ * Ergänzt 13-animationen.css. Handy (< 760 px): Fenster als Blatt von unten;
+ * iPad (≥ 760 px): Fenster mittig mit Tiefenunschärfe.
+ */
+:root {
+  --w1: #2bbe6e;
+  --w2: #3b9eff;
+  --w3: #f5a524;
+  --w4: #e5484d;
+  --w5: #a06bff;
+  --w6: #14b8a6;
+  --w7: #f472b6;
+  --mfeder: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mweich: cubic-bezier(0.22, 1, 0.36, 1);
+  --msog: cubic-bezier(0.6, -0.28, 0.74, 0.05);
+}
+
+/* ---------- Anmeldung ---------- */
+.login {
+  overflow: hidden;
+  isolation: isolate;
+}
+.lgaurora {
+  position: absolute;
+  inset: -25% -35%;
+  z-index: -1;
+  display: flex;
+  gap: 22px;
+  justify-content: center;
+  filter: blur(46px);
+  opacity: 0;
+  transform: rotate(-14deg);
+  pointer-events: none;
+}
+.lgaurora i {
+  display: block;
+  width: 52px;
+  height: 140%;
+  border-radius: 60px;
+}
+.lgaurora i:nth-child(1) {
+  background: var(--w1);
+}
+.lgaurora i:nth-child(2) {
+  background: var(--w2);
+}
+.lgaurora i:nth-child(3) {
+  background: var(--w3);
+}
+.lgaurora i:nth-child(4) {
+  background: var(--w4);
+}
+.lgaurora i:nth-child(5) {
+  background: var(--w5);
+}
+.lgaurora i:nth-child(6) {
+  background: var(--w6);
+}
+.lgaurora i:nth-child(7) {
+  background: var(--w7);
+}
+.lgschleier {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 75% at 50% 32%,
+    color-mix(in srgb, var(--bg) 25%, transparent),
+    var(--bg) 74%
+  );
+}
+html[data-anim="voll"] .lgaurora {
+  opacity: 0.42;
+  animation: lgAuraEin 1.6s var(--mweich) both;
+}
+html[data-anim="voll"] .lgaurora i {
+  animation: lgDrift 9s ease-in-out infinite alternate;
+}
+html[data-anim="voll"] .lgaurora i:nth-child(2n) {
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+html[data-anim="voll"] .lgaurora i:nth-child(3n) {
+  animation-duration: 13s;
+  animation-delay: -6s;
+}
+html[data-anim="ruhig"] .lgaurora {
+  opacity: 0.22;
+}
+@keyframes lgAuraEin {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.42;
+  }
+}
+@keyframes lgDrift {
+  from {
+    transform: translateY(-8%) scaleY(0.82);
+  }
+  to {
+    transform: translateY(9%) scaleY(1.12);
+  }
+}
+
+.loginbox {
+  position: relative;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+}
+
+/* Bodendüse als Logo über dem Schriftzug */
+.lgduese {
+  position: relative;
+  width: 118px;
+  height: 70px;
+  margin: 0 auto 14px;
+}
+.lgduese .stiel {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 10px;
+  height: 30px;
+  margin-left: -5px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--text) 22%, var(--surface));
+  transform-origin: bottom;
+}
+.lgduese .kopf {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  border-radius: 14px 14px 24px 24px;
+  background: color-mix(in srgb, var(--text) 8%, var(--surface));
+  border: 1px solid var(--line);
+  display: flex;
+  gap: 5px;
+  padding: 9px 13px;
+  box-sizing: border-box;
+  align-items: stretch;
+  overflow: hidden;
+}
+.lgduese .kopf b {
+  flex: 1;
+  border-radius: 4px;
+  transform-origin: bottom;
+}
+.lgduese .kopf b:nth-child(1) {
+  background: var(--w1);
+}
+.lgduese .kopf b:nth-child(2) {
+  background: var(--w2);
+}
+.lgduese .kopf b:nth-child(3) {
+  background: var(--w3);
+}
+.lgduese .kopf b:nth-child(4) {
+  background: var(--w4);
+}
+.lgduese .kopf b:nth-child(5) {
+  background: var(--w5);
+}
+.lgduese .kopf b:nth-child(6) {
+  background: var(--w6);
+}
+.lgduese .kopf b:nth-child(7) {
+  background: var(--w7);
+}
+.lgduese .kopf::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 34px;
+  left: -50px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+}
+
+/* Erster Auftritt (nur einmal je Öffnen der App) */
+html[data-anim="voll"] .login.lgerst .lgduese .stiel {
+  animation: mStielEin 0.45s 0.15s ease-out both;
+}
+html[data-anim="voll"] .login.lgerst .lgduese .kopf {
+  animation: mDueseEin 0.8s var(--mfeder) both;
+}
+html[data-anim="voll"] .login.lgerst .lgduese .kopf b {
+  animation: mLamelle 0.6s var(--mfeder) both;
+  animation-delay: calc(0.3s + var(--n) * 60ms);
+}
+html[data-anim="voll"] .login .lgduese .kopf::after {
+  animation: mGlanz 3s 1.6s ease-in-out infinite;
+}
+html[data-anim="voll"] .login.lgerst .lgmark {
+  animation: mAuf 0.7s 0.75s var(--mfeder) both;
+}
+html[data-anim="voll"] .login.lgerst .loginbox {
+  animation: mKarteEin 0.9s 0.1s var(--mfeder) both;
+}
+html[data-anim="voll"] .login.lgerst .loginbox > :not(.lgduese):not(.lgmark) {
+  animation: mAuf 0.55s var(--mweich) both;
+  animation-delay: calc(0.85s + var(--i, 0) * 55ms);
+}
+html[data-anim="ruhig"] .login.lgerst .loginbox {
+  animation: mBlende 0.5s ease both;
+}
+@keyframes mStielEin {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes mDueseEin {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mLamelle {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes mGlanz {
+  0% {
+    left: -50px;
+  }
+  55%,
+  100% {
+    left: 140px;
+  }
+}
+@keyframes mAuf {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mKarteEin {
+  from {
+    opacity: 0;
+    transform: translateY(70px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mBlende {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Schrittwechsel im Anmeldefenster: Inhalt gleitet */
+html[data-anim="voll"] .login:not(.lgerst) .loginbox.lgwechsel > :not(.lgduese) {
+  animation: mSchritt 0.38s var(--mweich) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+@keyframes mSchritt {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Farbstrich unter dem aktiven Feld */
+.loginbox .field {
+  position: relative;
+}
+.loginbox .field::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -5px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--w1),
+    var(--w2),
+    var(--w3),
+    var(--w4),
+    var(--w5),
+    var(--w6),
+    var(--w7)
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  opacity: 0;
+  pointer-events: none;
+}
+html[data-anim="voll"] .loginbox .field::after {
+  transition:
+    transform 0.5s var(--mweich),
+    opacity 0.2s;
+}
+.loginbox .field:focus-within::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+/* Glanz über den Anmelde-Knopf */
+html[data-anim="voll"] .loginbox .btn.primary {
+  position: relative;
+  overflow: hidden;
+}
+html[data-anim="voll"] .loginbox .btn.primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: translateX(-100%);
+  animation: mKnopfGlanz 3.4s 2.2s ease-in-out infinite;
+}
+@keyframes mKnopfGlanz {
+  0% {
+    transform: translateX(-100%);
+  }
+  40%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Erfolg: die Düse saugt die Karte ein */
+html[data-anim="voll"] .login.lgsaug .loginbox > :not(.lgduese) {
+  animation: mEinsaugen 0.62s var(--msog) forwards;
+}
+html[data-anim="voll"] .login.lgsaug .loginbox {
+  animation: mKarteZu 0.7s 0.12s var(--msog) forwards;
+}
+html[data-anim="voll"] .login.lgsaug .lgduese .kopf b {
+  animation: mZucken 0.14s ease-in-out 6 alternate;
+}
+html[data-anim="ruhig"] .login.lgsaug {
+  animation: mAusblende 0.3s ease forwards;
+}
+@keyframes mEinsaugen {
+  to {
+    opacity: 0;
+    transform: translateY(-60px) scale(0.6);
+    filter: blur(3px);
+  }
+}
+@keyframes mKarteZu {
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.86);
+  }
+}
+@keyframes mZucken {
+  from {
+    transform: none;
+  }
+  to {
+    transform: scaleY(0.45);
+  }
+}
+@keyframes mAusblende {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Willkommensgruß nach dem Anmelden */
+.mgruss {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  text-align: center;
+  background: transparent;
+}
+.mgruss b {
+  font-size: clamp(26px, 6vw, 40px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+.mgruss span {
+  font-size: 15px;
+  color: var(--muted);
+}
+.mgruss::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px;
+  border-radius: 50%;
+  animation: mWelle 1s ease-out forwards;
+}
+.mgruss b,
+.mgruss span {
+  animation: mGruss 1.5s var(--mweich) forwards;
+}
+.mgruss span {
+  animation-delay: 0.08s;
+}
+.mgruss {
+  animation: mGrussRaum 1.5s ease forwards;
+}
+@keyframes mWelle {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--w1) 38%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 120vmax color-mix(in srgb, var(--w1) 0%, transparent);
+  }
+}
+@keyframes mGruss {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+  25%,
+  70% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+@keyframes mGrussRaum {
+  0%,
+  70% {
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* ---------- Fenster und Popups ---------- */
+/* Handy: Blatt von unten mit Federung, Griff wackelt kurz */
+@media (max-width: 759px) {
+  html[data-anim="voll"] #modal.open .sheet {
+    animation: mBlattRein 0.52s var(--mfeder) both;
+  }
+  @keyframes mBlattRein {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: none;
+    }
+  }
+}
+/* iPad: Fenster schwebt aus der Tiefe auf */
+html[data-anim="ruhig"] #modal.open .sheet {
+  animation: mBlende 0.22s ease both;
+}
+
+/* Schließen: ein Abbild des Fensters gleitet weg, die App arbeitet sofort weiter */
+.mgeist {
+  position: fixed;
+  z-index: 61;
+  pointer-events: none;
+  margin: 0 !important;
+  box-sizing: border-box;
+}
+.mgeistback {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.45);
+}
+.mgeistback {
+  animation: mAusblende 0.26s ease forwards;
+}
+.mgeist.handy {
+  animation: mBlattRaus 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+.mgeist.ruhig {
+  animation: mAusblende 0.18s ease forwards;
+}
+@keyframes mBlattRaus {
+  to {
+    transform: translateY(105%);
+  }
+}
+@keyframes mSchwebenRaus {
+  to {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+}
+
+/* Rückmeldung nach dem Speichern */
+.mtoast {
+  position: fixed;
+  left: 50%;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px 12px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.92rem;
+  pointer-events: none;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+}
+.mtoast svg {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.mtoast circle {
+  fill: var(--accent);
+}
+.mtoast path {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 20;
+  stroke-dashoffset: 0;
+}
+html[data-anim="voll"] .mtoast {
+  animation: mToast 1.9s var(--mfeder) forwards;
+}
+html[data-anim="voll"] .mtoast circle {
+  animation: mKreis 0.4s var(--mfeder) both;
+  transform-origin: center;
+}
+html[data-anim="voll"] .mtoast path {
+  animation: mHaken 0.35s 0.22s ease-out both;
+}
+html[data-anim="ruhig"] .mtoast {
+  animation: mToastRuhig 1.6s ease forwards;
+}
+@keyframes mToast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 24px) scale(0.8);
+  }
+  18%,
+  78% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.96);
+  }
+}
+@keyframes mToastRuhig {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes mKreis {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes mHaken {
+  from {
+    stroke-dashoffset: 20;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---------- Seitenwechsel ---------- */
+.mstreif {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 3px;
+  z-index: 70;
+  pointer-events: none;
+  display: flex;
+  opacity: 0;
+}
+.mstreif i {
+  flex: 1;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.mstreif i:nth-child(1) {
+  background: var(--w1);
+}
+.mstreif i:nth-child(2) {
+  background: var(--w2);
+}
+.mstreif i:nth-child(3) {
+  background: var(--w3);
+}
+.mstreif i:nth-child(4) {
+  background: var(--w4);
+}
+.mstreif i:nth-child(5) {
+  background: var(--w5);
+}
+.mstreif i:nth-child(6) {
+  background: var(--w6);
+}
+.mstreif i:nth-child(7) {
+  background: var(--w7);
+}
+.mstreif.laeuft {
+  animation: mStreifRaum 0.9s ease forwards;
+}
+.mstreif.laeuft i {
+  animation: mStreif 0.5s var(--mweich) forwards;
+  animation-delay: calc(var(--n) * 40ms);
+}
+@keyframes mStreif {
+  to {
+    transform: none;
+  }
+}
+@keyframes mStreifRaum {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Inventur ---------- */
+.stepper {
+  position: relative;
+}
+.mplus {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  pointer-events: none;
+  color: var(--accent);
+  transform: translateX(-50%);
+  animation: mAufsteigen 0.7s ease-out forwards;
+  z-index: 2;
+}
+.mplus.minus {
+  color: var(--warn, #e5484d);
+}
+@keyframes mAufsteigen {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 6px) scale(0.8);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -26px) scale(1.15);
+  }
+}
+.mhuepf {
+  animation: mHuepf 0.4s var(--mfeder);
+}
+@keyframes mHuepf {
+  0% {
+    transform: translateY(60%);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+.mschuettel {
+  animation: mSchuetteln 0.42s ease-in-out;
+}
+@keyframes mSchuetteln {
+  20% {
+    transform: translateX(-7px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+.invsumme b.mtick {
+  display: inline-block;
+  animation: mTick 0.45s var(--mfeder);
+}
+@keyframes mTick {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+html[data-anim="voll"] .invzeile.top {
+  position: relative;
+  overflow: hidden;
+}
+html[data-anim="voll"] .invzeile.top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    color-mix(in srgb, var(--accent) 16%, transparent) 50%,
+    transparent 65%
+  );
+  background-size: 260% 100%;
+  animation: mSchimmer 4.5s linear infinite;
+}
+@keyframes mSchimmer {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -130% 0;
+  }
+}
+
+/* ---------- Neue Bonusstufe ---------- */
+.mkonfetti {
+  position: fixed;
+  z-index: 92;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.mkonfetti i {
+  position: absolute;
+  width: 8px;
+  height: 13px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: mKnall 1.25s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes mKnall {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) rotate(var(--r));
+  }
+}
+.kpi.mstufe {
+  animation: mStufe 1.2s var(--mfeder);
+}
+@keyframes mStufe {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
+    transform: scale(0.96);
+  }
+  40% {
+    transform: scale(1.04);
+  }
+  100% {
+    box-shadow: 0 0 0 22px transparent;
+    transform: none;
+  }
+}
+
+/* ---------- Details ---------- */
+/* Hamburger-Menü: Fläche gleitet mit Federung herein */
+html[data-anim="voll"] .drawer.open,
+html[data-anim="voll"] .drawer[aria-hidden="false"] {
+  transition-timing-function: var(--mfeder);
+}
+/* Aufklappbare Abschnitte: Inhalt gleitet auf */
+html[data-anim="voll"] .klappsec:not(.zu) .klappinhalt {
+  animation: mAuf 0.38s var(--mweich) both;
+}
+html[data-anim="voll"] .klappkopf .kp {
+  display: inline-block;
+  transition: transform 0.3s var(--mfeder);
+}
+html[data-anim="voll"] .klappsec:not(.zu) .klappkopf .kp {
+  transform: rotate(180deg);
+}
+/* Fehlermeldungen schütteln kurz */
+html[data-anim="voll"] .err:not([hidden]) {
+  animation: mSchuetteln 0.42s ease-in-out;
+}
+
+/* Bewegung reduzieren und Druck: alles sofort */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-anim="voll"]) .lgaurora i,
+  html:not([data-anim="voll"]) .mstreif {
+    animation: none !important;
+  }
+}
+@media print {
+  .lgaurora,
+  .mstreif,
+  .mtoast,
+  .mkonfetti,
+  .mgeist,
+  .mgeistback,
+  .mgruss {
+    display: none !important;
+  }
+}
+
+/* ---------- Zählwerk: tabellarische Ziffern ---------- */
+.mzaehlt {
+  font-variant-numeric: tabular-nums;
+}

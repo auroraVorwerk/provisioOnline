@@ -1,0 +1,191 @@
+/* Praxis-Einführung (Beta 1.4) */
+#tut[hidden] { display: none !important; }
+#tut .tutdimm {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(4, 10, 20, 0.55);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+#tut .tutring {
+  position: fixed;
+  z-index: 9001;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    0 0 0 2px var(--accent, #3b9bf0),
+    0 0 0 7px rgba(59, 155, 240, 0.28),
+    0 0 0 200vmax rgba(4, 10, 20, 0.5);
+  transition:
+    left 0.35s var(--feder, ease),
+    top 0.35s var(--feder, ease),
+    width 0.35s var(--feder, ease),
+    height 0.35s var(--feder, ease),
+    opacity 0.25s ease;
+  animation: tutPuls 1.8s ease-in-out infinite;
+}
+@keyframes tutPuls {
+  0%, 100% { box-shadow: 0 0 0 2px var(--accent, #3b9bf0), 0 0 0 6px rgba(59, 155, 240, 0.3), 0 0 0 200vmax rgba(4, 10, 20, 0.5); }
+  50% { box-shadow: 0 0 0 2px var(--accent, #3b9bf0), 0 0 0 11px rgba(59, 155, 240, 0.12), 0 0 0 200vmax rgba(4, 10, 20, 0.5); }
+}
+html[data-anim="aus"] #tut .tutring { animation: none; }
+
+#tut .tutkarte {
+  position: fixed;
+  z-index: 9002;
+  left: max(14px, env(safe-area-inset-left));
+  right: max(14px, env(safe-area-inset-right));
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 14px 16px 14px;
+  border-radius: 22px;
+  background: var(--gruppe, #101c2b);
+  color: var(--text, #f2f6fa);
+  box-shadow:
+    inset 0 0 0 0.5px var(--glasRand, rgba(255, 255, 255, 0.13)),
+    0 18px 44px rgba(0, 0, 0, 0.45);
+  transition: top 0.3s var(--feder, ease), bottom 0.3s var(--feder, ease);
+}
+#tut .tutkarte.oben {
+  bottom: auto;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+}
+html.duo-zu #tut .tutkarte {
+  right: var(--duo-spalte, 96px);
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+#tut .tutkarte.rein { animation: tutRein 0.4s var(--feder, ease) both; }
+@keyframes tutRein {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+#tut .tutkarte.oben.rein { animation-name: tutReinOben; }
+@keyframes tutReinOben {
+  from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+#tut .tutkarte.stups { animation: tutStups 0.42s ease; }
+@keyframes tutStups {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(-6px); }
+  60% { transform: translateX(5px); }
+}
+#tut .tutkopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted, #9aa9bb);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: left;
+  cursor: pointer;
+}
+#tut .tutzahl { font-variant-numeric: tabular-nums; }
+#tut .tutbalken {
+  height: 4px;
+  margin: 8px 0 10px;
+  border-radius: 2px;
+  background: var(--fill, rgba(120, 140, 165, 0.14));
+  overflow: hidden;
+}
+#tut .tutbalken i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #3b9bf0, #7cc4ff);
+  transition: width 0.5s var(--feder, ease);
+}
+#tut .tuttitel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+#tut .tuttitel::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #34c759 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3L15 6.8' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.35s var(--feder, ease), opacity 0.2s ease;
+}
+#tut .tutkarte.geschafft .tuttitel::after { transform: scale(1); opacity: 1; }
+#tut.tutende .tutdimm { opacity: 1 !important; }
+#tut .tuttext {
+  margin: 6px 0 0;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--text, #f2f6fa);
+  opacity: 0.86;
+}
+#tut .tutkarte.klein .tuttext,
+#tut .tutkarte.klein .tutknoepfe,
+#tut .tutkarte.klein .tutweg { display: none; }
+#tut .tutknoepfe:empty { display: none; }
+#tut .tutknoepfe { margin-top: 12px; }
+#tut .tutlos {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--accent, #3b9bf0);
+  color: #fff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#tut .tutweg {
+  display: block;
+  margin: 10px auto 0;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--faint, #7f8fa4);
+  font: inherit;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+#tut .tutkarte.ende { top: 50%; bottom: auto; transform: translateY(-50%); animation: none; }
+body.hell #tut .tutkarte { background: #ffffff; }
+body.hell #tut .tutring { box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px rgba(59, 155, 240, 0.25), 0 0 0 200vmax rgba(10, 20, 40, 0.38); }
+@media print { #tut { display: none !important; } }
+html.duo-zu #tut .tutkarte.oben { bottom: auto; }
+html.duo-zu #tut .tutkarte.ende { bottom: auto; }
+
+/* Beta 1.8 · Einführung als Spiel */
+#tut .tutxp { display: inline-block; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, #ffd60a 22%, transparent); color: #ffd60a; font-weight: 700; }
+#tut .tutplus {
+  position: absolute; right: 16px; top: 34px; padding: 4px 10px; border-radius: 999px; background: #ffd60a; color: #2a2000;
+  font-size: 13px; font-weight: 800; pointer-events: none; animation: tutPlus 1.2s var(--feder, ease) forwards;
+}
+@keyframes tutPlus { 0% { opacity: 0; transform: translateY(8px) scale(0.8); } 20% { opacity: 1; transform: none; } 75% { opacity: 1; } 100% { opacity: 0; transform: translateY(-18px); } }
+#tut .tutzweit { display: block; width: 100%; margin-top: 8px; padding: 10px; border: 0; border-radius: 14px; background: var(--fill, rgba(120,140,165,.14)); color: var(--text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+#tut .tutkarte.level { top: 50%; bottom: auto; transform: translateY(-50%); text-align: center; }
+#tut .tutkarte.level.rein { animation: tutLevel 0.55s var(--feder, ease) both; }
+@keyframes tutLevel { from { opacity: 0; transform: translateY(-50%) scale(0.85); } to { opacity: 1; transform: translateY(-50%); } }
+#tut .tutkarte.level .tuttitel { flex-direction: column; justify-content: center; gap: 6px; font-size: 22px; }
+#tut .tutkarte.level .tuttitel::after { display: none; }
+#tut .tutabz { display: grid; place-items: center; width: 76px; height: 76px; margin: 4px auto 0; border-radius: 50%; font-size: 40px;
+  background: radial-gradient(circle at 35% 30%, #fff6c2, #ffd60a 45%, #c98a00); box-shadow: 0 8px 24px rgba(255, 214, 10, 0.35); animation: tutAbz 0.8s var(--feder, ease) both; }
+@keyframes tutAbz { 0% { transform: scale(0) rotate(-30deg); } 70% { transform: scale(1.12) rotate(6deg); } 100% { transform: none; } }
+#tut .tutkarte-level { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 4px 0 12px; }
+#tut .tutkarte-level span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--fill, rgba(120,140,165,.14)); font-size: 15px; filter: grayscale(1); opacity: 0.45; }
+#tut .tutkarte-level span.an { filter: none; opacity: 1; background: color-mix(in srgb, #ffd60a 25%, transparent); }
+#tut .tutkarte-level.alle { font-size: 22px; letter-spacing: 4px; }
+html.duo-zu #tut .tutkarte.level { bottom: auto; }
