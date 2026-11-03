@@ -20,34 +20,41 @@
   if (typeof lgWeiter !== "function" || typeof flushSave !== "function") return;
 
   /* Laufzeit-Zustand (nur im Arbeitsspeicher) */
-  const O = { dk: null, auth: null, token: null, gueltig: 0, einladen: false, nochmal: false };
+  const O = { dk: null, auth: null, it: 0, token: null, gueltig: 0, einladen: false, nochmal: false };
   let S = null; // Abgleich-Stand (verschlüsselt auf dem Gerät abgelegt)
   let status = { art: "aus", text: "", zeit: 0 };
   let idSchluessel = null;
   const idCache = new Map();
 
   /* ---------- Hilfen ---------- */
-  async function ableiten(geheim, zweck, dk) {
+  /* Der Wiederherstellungs-Code hat 24 Zufallszeichen (~120 Bit) – hier zählt die
+     Rundenzahl kaum; sie bleibt fest, damit bestehende Codes gültig bleiben. */
+  const REC_IT = 150000;
+  const itMerken = (dk, it) => store.set("bw-authit-" + dk, it);
+  const itGemerkt = (dk) => store.get("bw-authit-" + dk) || KDF_ITER;
+  async function ableiten(geheim, zweck, dk, it) {
     const basis = await crypto.subtle.importKey("raw", _te.encode(geheim), "PBKDF2", false, ["deriveBits"]);
     const bits = await crypto.subtle.deriveBits(
-      { name: "PBKDF2", salt: _te.encode("provisio-online/" + zweck + "/" + dk), iterations: KDF_ITER, hash: "SHA-256" },
+      { name: "PBKDF2", salt: _te.encode("provisio-online/" + zweck + "/" + dk), iterations: it || KDF_ITER, hash: "SHA-256" },
       basis,
       256,
     );
     return _b64(bits);
   }
   class ApiFehler extends Error {
-    constructor(st, text, daten) {
+    constructor(st, text, daten, token) {
       super(text);
       this.status = st;
       this.daten = daten || {};
+      this.token = token || null; // mit welchem Token die Anfrage lief
     }
   }
   async function api(pfad, body, mitToken) {
     let r;
+    const token = mitToken ? O.token : null;
     try {
       const kopf = { "Content-Type": "application/json" };
-      if (mitToken && O.token) kopf.Authorization = "Bearer " + O.token;
+      if (token) kopf.Authorization = "Bearer " + token;
       r = await fetch(API + "/" + pfad, {
         method: "POST",
         headers: kopf,
@@ -63,7 +70,7 @@
     try {
       d = await r.json();
     } catch (e) {}
-    if (!r.ok) throw new ApiFehler(r.status, d.fehler || "Serverfehler (" + r.status + ").", d);
+    if (!r.ok) throw new ApiFehler(r.status, d.fehler || "Serverfehler (" + r.status + ").", d, token);
     return d;
   }
   /* Stabile Textform (sortierte Schlüssel) und kurzer Prüfwert */
@@ -226,6 +233,19 @@
   const bereit = () =>
     !!(me && dataReady && masterKey && !fremdAktiv && !viewUser && O.dk && me.dk === O.dk && !tutorAktiv());
 
+  /* Server meldet: Sitzung beendet (anderes Gerät hat „überall abmelden“ gewählt oder Passwort geändert) */
+  async function zwangsAbmelden(text) {
+    O.dk = null;
+    O.auth = null;
+    O.token = null;
+    try {
+      await logout();
+    } finally {
+      lgErrText = text || "Du wurdest abgemeldet. Bitte neu anmelden.";
+      lgStep = "login";
+      renderLogin();
+    }
+  }
   async function tokenSichern() {
     if (O.token && O.gueltig > Date.now() + 60e3) return true;
     if (!O.auth || !O.dk) return false;
@@ -237,8 +257,7 @@
       return true;
     } catch (e) {
       if (e.status === 401) {
-        O.auth = null; // Passwort wurde woanders geändert
-        statusSetzen("anmelden", "Dein Passwort wurde auf einem anderen Gerät geändert. Bitte ab- und neu anmelden.");
+        zwangsAbmelden("Dein Passwort wurde geändert. Bitte mit dem neuen Passwort anmelden.");
         return false;
       }
       throw e;
@@ -389,7 +408,10 @@
       }
       statusSetzen("fehler", "Zu viele gleichzeitige Änderungen – versuche es gleich noch einmal.");
     } catch (e) {
-      if (e.status === 401) {
+      if (e.status === 401 && e.daten.grund === "abgemeldet" && e.token === O.token) {
+        /* nur wenn das aktuelle Token betroffen ist – nicht bei einem gerade ersetzten (Passwortwechsel) */
+        zwangsAbmelden(e.message);
+      } else if (e.status === 401) {
         O.token = null;
         O.nochmal = true;
       } else if (e.status === 0) statusSetzen("offline");
@@ -522,9 +544,10 @@
   };
 
   /* ---------- Anmeldung, Registrierung, Passwort vergessen ---------- */
-  function sitzungMerken(dk, auth, a) {
+  function sitzungMerken(dk, auth, a, it) {
     O.dk = dk;
     O.auth = auth;
+    O.it = it || KDF_ITER;
     O.token = (a && a.token) || null;
     O.gueltig = (a && a.gueltig) || 0;
     O.einladen = !!(a && a.einladen);
@@ -555,26 +578,40 @@
 
   async function anmelden(dk, pw) {
     if (!pw) throw new Error(FALSCH);
-    const auth = await ableiten(pw, "auth", dk);
-    let a;
+    let a, auth, it;
     try {
+      it = (await api("parameter", { dk })).it;
+      auth = await ableiten(pw, "auth", dk, it);
       a = await api("anmelden", { dk, auth });
     } catch (e) {
       if (e.status !== 0) throw e;
+      it = itGemerkt(dk);
+      auth = await ableiten(pw, "auth", dk, it);
       /* Ohne Netz: mit dem zuletzt auf diesem Gerät bestätigten Zugang */
       const u = await userGet(dk);
       if (!u || !u.mkByPw)
         throw new Error("Keine Verbindung. Auf diesem Gerät warst du noch nicht angemeldet – dafür braucht es einmal Internet.");
       const mk = await kontoOeffnenMitPw(u, pw);
       if (!mk) throw new Error(FALSCH);
-      sitzungMerken(dk, auth, null);
+      sitzungMerken(dk, auth, null, it);
       store.set("bw-session", { dk });
       setTimeout(() => statusSetzen("offline"), 300);
       return starteSitzung(u);
     }
     const mk = await mkOeffnen(a.mkByPw, pw);
     if (!mk) throw new Error(FALSCH);
-    sitzungMerken(dk, auth, a);
+    /* Konto aus Online 1.0: Prüfwert und Umschlag auf 600.000 Runden heben */
+    if (it < KDF_ITER || umschlagAlt(a.mkByPw)) {
+      const auth2 = await ableiten(pw, "auth", dk, KDF_ITER);
+      const mkByPw2 = await mkUmschliessen(mk, pw);
+      O.token = a.token;
+      const r = await api("passwort", { alt: auth, auth: auth2, mkByPw: mkByPw2 }, true);
+      Object.assign(a, { token: r.token, gueltig: r.gueltig, mkByPw: mkByPw2 });
+      auth = auth2;
+      it = KDF_ITER;
+    }
+    itMerken(dk, it);
+    sitzungMerken(dk, auth, a, it);
     const u = await serverKontoUebernehmen(dk, a, mk, {});
     store.set("bw-session", { dk });
     await erstAbgleich(dk);
@@ -595,8 +632,8 @@
     const code = neuerWiederherstellungsCode();
     const u = { dk, vorname: lg.vor, nachname: lg.nach, rolle: ROLLE_KB, team: [] };
     await kontoKryptoAnlegen(u, pw, code); // setzt masterKey
-    const auth = await ableiten(pw, "auth", dk);
-    const rec = await ableiten(codeNorm(code), "rec", dk);
+    const auth = await ableiten(pw, "auth", dk, KDF_ITER);
+    const rec = await ableiten(codeNorm(code), "rec", dk, REC_IT);
     const a = await api("registrieren", {
       dk,
       einladung: einl,
@@ -607,7 +644,8 @@
       profil: await profilChiffrat(u),
     });
     u.einladen = !!a.einladen;
-    sitzungMerken(dk, auth, a);
+    itMerken(dk, KDF_ITER);
+    sitzungMerken(dk, auth, a, KDF_ITER);
     await lokalSichern(u);
     store.set("bw-session", { dk });
     loginEl.hidden = true;
@@ -622,14 +660,15 @@
     const pf = pwRegelFehler(pw);
     if (pf) throw new Error(pf);
     if (pw !== pw2) throw new Error("Die beiden neuen Passwörter stimmen nicht überein.");
-    const rec = await ableiten(cn, "rec", dk);
+    const rec = await ableiten(cn, "rec", dk, REC_IT);
     const w = await api("wiederherstellen", { dk, rec });
     const mk = await mkOeffnen(w.mkByCode, cn);
     if (!mk) throw new Error("Der Wiederherstellungs-Code stimmt nicht.");
     const mkByPw = await mkUmschliessen(mk, pw);
-    const auth = await ableiten(pw, "auth", dk);
+    const auth = await ableiten(pw, "auth", dk, KDF_ITER);
     const a = await api("passwort-neu", { reset: w.reset, auth, mkByPw });
-    sitzungMerken(dk, auth, a);
+    itMerken(dk, KDF_ITER);
+    sitzungMerken(dk, auth, a, KDF_ITER);
     const u = await serverKontoUebernehmen(dk, { ...a, mkByPw, mkByCode: w.mkByCode }, mk, { mkByPw });
     store.set("bw-session", { dk });
     await erstAbgleich(dk);
@@ -705,8 +744,10 @@
       await Promise.race([abgleich(), new Promise((ok) => setTimeout(ok, 5000))]);
     }
     clearTimeout(planTimer);
+    /* Sitzung auch auf dem Server beenden (abgefangene Token werden wertlos) */
+    if (O.token) await Promise.race([api("abmelden", {}, true).catch(() => {}), new Promise((ok) => setTimeout(ok, 3000))]);
     const r = await logoutOhne.apply(this, arguments);
-    Object.assign(O, { dk: null, auth: null, token: null, gueltig: 0, einladen: false });
+    Object.assign(O, { dk: null, auth: null, it: 0, token: null, gueltig: 0, einladen: false });
     S = null;
     idSchluessel = null;
     idCache.clear();
@@ -719,16 +760,14 @@
     if (!O.dk) return;
     if (!navigator.onLine) throw new Error("Dafür braucht es eine Internetverbindung.");
     await tokenSichern();
-    const a = await api(
-      "passwort",
-      { alt: await ableiten(alt, "auth", O.dk), auth: await ableiten(neu, "auth", O.dk), mkByPw },
-      true,
-    ).catch((e) => {
+    const altAuth = await ableiten(alt, "auth", O.dk, O.it);
+    const neuAuth = await ableiten(neu, "auth", O.dk, KDF_ITER);
+    const a = await api("passwort", { alt: altAuth, auth: neuAuth, mkByPw }, true).catch((e) => {
       throw new Error(e.status === 0 ? "Dafür braucht es eine Internetverbindung." : e.message);
     });
-    O.token = a.token;
-    O.gueltig = a.gueltig;
-    O.auth = await ableiten(neu, "auth", O.dk);
+    /* Token und Prüfwert gemeinsam ersetzen, damit ein laufender Abgleich nicht dazwischenfunkt */
+    Object.assign(O, { token: a.token, gueltig: a.gueltig, auth: neuAuth, it: KDF_ITER });
+    itMerken(O.dk, KDF_ITER);
   };
   window.onlineCode = async function (pw, code, mkByCode) {
     if (!O.dk) return;
@@ -736,7 +775,7 @@
     await tokenSichern();
     await api(
       "code",
-      { auth: await ableiten(pw, "auth", O.dk), rec: await ableiten(codeNorm(code), "rec", O.dk), mkByCode },
+      { auth: await ableiten(pw, "auth", O.dk, O.it), rec: await ableiten(codeNorm(code), "rec", O.dk, REC_IT), mkByCode },
       true,
     ).catch((e) => {
       throw new Error(e.status === 0 ? "Dafür braucht es eine Internetverbindung." : e.message);
@@ -811,6 +850,8 @@
       <p class="esgh">Konflikte</p>
       <div class="esgrp espad" id="onKf">${konfliktHTML()}</div>
       <p class="esgh">Konto</p>
+      <div class="esgrp">${esZeile("onAlle", "Auf allen Geräten abmelden")}</div>
+      <p class="esfuss">Beendet die Sitzungen auf allen Geräten, auch auf diesem. Nützlich, wenn ein Gerät verloren gegangen ist.</p>
       <div class="esgrp">${esZeile("onLoeschen", "Online-Konto löschen", "", "rot")}</div>
       <p class="esfuss">Löscht dein Konto und alle Daten auf dem Server endgültig. Die Daten auf diesem Gerät bleiben, bis du dich abmeldest.</p>`,
       async (ebene) => {
@@ -818,7 +859,8 @@
         ebene.querySelector("#onKf").innerHTML = konfliktHTML();
         ebene.querySelector("#onJetzt").onclick = () => abgleich();
         const e = ebene.querySelector("#onEinl");
-        if (e) e.onclick = () => einladungErstellen(ebene.querySelector("#onTL").checked);
+        if (e) e.onclick = () => einladungDialog(ebene.querySelector("#onTL").checked);
+        ebene.querySelector("#onAlle").onclick = alleAbmeldenDialog;
         ebene.querySelector("#onKf").onclick = async (ev) => {
           const auf = ev.target.closest("[data-kfauf]"),
             weg = ev.target.closest("[data-kfweg]");
@@ -842,16 +884,38 @@
       },
     );
   }
-  async function einladungErstellen(tl) {
+  /* Einladungscode gilt nur für die eingetragene DK-Nummer */
+  function einladungDialog(tl) {
+    simpleDialog(
+      "Einladungscode erstellen",
+      "Für wen ist der Code?",
+      `<div class="grp">${fld("onEinlDk", "DK-Nummer der Person", "", "text", 'placeholder="DK00000000" autocapitalize="characters" spellcheck="false" autocomplete="off"')}</div>
+       <p class="hinweis bleibt">Der Code funktioniert nur mit dieser DK-Nummer – so kann sich niemand unter fremdem Namen registrieren.</p>
+       <p class="err" id="onEinlErr" hidden></p>`,
+      () => {
+        const dk = document.getElementById("onEinlDk").value.toUpperCase().replace(/\s/g, "").replace(/^TL-/, "");
+        if (!/^DK\d{8}$/.test(dk)) {
+          const err = document.getElementById("onEinlErr");
+          err.textContent = "Die DK-Nummer besteht aus DK und acht Ziffern.";
+          err.hidden = false;
+          return;
+        }
+        closeModal();
+        setTimeout(() => einladungErstellen(tl, dk), 380);
+      },
+      "Code erstellen",
+    );
+  }
+  async function einladungErstellen(tl, dk) {
     try {
       if (!(await tokenSichern())) throw new Error("Bitte neu anmelden.");
-      const r = await api("einladung", { einladen: !!tl }, true);
+      const r = await api("einladung", { einladen: !!tl, dk }, true);
       const bis = new Date(r.bis).toLocaleDateString("de-DE");
       simpleDialog(
         "Einladungscode",
         "Gilt einmal · bis " + bis,
         `<div class="grp"><div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.3rem;letter-spacing:2px;padding:16px;background:var(--surface-2);border-radius:12px;text-align:center;-webkit-user-select:all;user-select:all">${esc(r.code)}</div>
-          <p class="hinweis">Gib den Code deinem Teammitglied. Es registriert sich damit in Provisio Online.${tl ? " Dieser Zugang darf selbst weitere Codes erstellen." : ""}</p>
+          <p class="hinweis">Gilt nur für <b>${esc(dk)}</b>. Gib den Code deinem Teammitglied – es registriert sich damit in Provisio Online.${tl ? " Dieser Zugang darf selbst weitere Codes erstellen." : ""}</p>
           <div class="actions"><button type="button" class="btn" id="onKopie">Code kopieren</button></div></div>`,
         () => closeModal(),
         "Fertig",
@@ -867,6 +931,29 @@
       simpleDialog("Einladungscode", "", `<p class="err">${esc(e.status === 0 ? "Keine Verbindung." : e.message)}</p>`, () => closeModal(), "OK");
     }
   }
+  function alleAbmeldenDialog() {
+    simpleDialog(
+      "Auf allen Geräten abmelden",
+      "Auch dieses Gerät",
+      `<p class="hinweis bleibt">Alle Sitzungen werden sofort beendet. Danach meldest du dich überall neu an. Noch nicht abgeglichene Änderungen auf anderen Geräten bleiben dort gespeichert und werden beim nächsten Anmelden übertragen.</p><p class="err" id="onAlleErr" hidden></p>`,
+      async () => {
+        try {
+          await abgleich();
+          await tokenSichern();
+          await api("abmelden-alle", {}, true);
+          closeModal();
+          if (typeof unterseiteSchliessen === "function") unterseiteSchliessen();
+          O.token = null;
+          zwangsAbmelden("Du wurdest auf allen Geräten abgemeldet.");
+        } catch (e) {
+          const err = document.getElementById("onAlleErr");
+          err.textContent = e.status === 0 ? "Keine Verbindung." : e.message;
+          err.hidden = false;
+        }
+      },
+      "Abmelden",
+    );
+  }
   function kontoLoeschenDialog() {
     simpleDialog(
       "Online-Konto löschen",
@@ -878,7 +965,7 @@
         const err = document.getElementById("onErr");
         try {
           await tokenSichern();
-          await api("konto-loeschen", { auth: await ableiten(document.getElementById("onPw").value, "auth", O.dk) }, true);
+          await api("konto-loeschen", { auth: await ableiten(document.getElementById("onPw").value, "auth", O.dk, O.it) }, true);
           O.auth = null;
           O.token = null;
           closeModal();

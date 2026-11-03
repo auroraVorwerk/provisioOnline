@@ -159,9 +159,10 @@
   /* Ganze PDF lesen (pdf.js); gibt die Seite mit der Tabelle ausgewertet zurück */
   async function pdfAuslesen(datei, dk) {
     if (!global.pdfjsLib) throw new Error("Der PDF-Leser ist nicht geladen.");
-    pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("vendor/pdf.worker.min.mjs", document.baseURI).href;
     const daten = new Uint8Array(await datei.arrayBuffer());
-    const doc = await pdfjsLib.getDocument({ data: daten, isEvalSupported: false, disableFontFace: true }).promise;
+    const aufgabe = pdfjsLib.getDocument({ data: daten, isEvalSupported: false, disableFontFace: true, verbosity: 0 });
+    const doc = await aufgabe.promise;
     try {
       for (let p = 1; p <= doc.numPages; p++) {
         const seite = await doc.getPage(p);
@@ -170,7 +171,7 @@
         if (s && s.reihen.length) return { seite: p, ...abrechnungAuswerten(s, dk) };
       }
     } finally {
-      doc.destroy();
+      aufgabe.destroy();
     }
     throw new Error("In dieser PDF wurde keine Leistungsübersicht mit „Partner-Nr“ gefunden.");
   }

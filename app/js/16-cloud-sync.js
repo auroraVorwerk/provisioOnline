@@ -68,7 +68,10 @@ const DK_RE = /^(TL-)?DK\d{8}$/;
  * und nur, solange man angemeldet ist.
  */
 const CRYPTO_OK = !!(typeof crypto !== "undefined" && crypto.subtle);
-const KDF_ITER = 150000;
+/* PBKDF2-Runden für neue Umschläge (OWASP-Empfehlung 2023: 600.000 für SHA-256).
+   Ältere Umschläge ohne "it" wurden mit 150.000 erstellt und werden beim Anmelden hochgestuft. */
+const KDF_ITER = 600000;
+const KDF_ALT = 150000;
 let masterKey = null; // CryptoKey der laufenden Sitzung (nie gespeichert)
 const _te = new TextEncoder();
 const _td = new TextDecoder();
@@ -81,10 +84,10 @@ function _b64(buf) {
 function _unb64(s) {
   return Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 }
-async function _kdfKey(secret, saltBytes) {
+async function _kdfKey(secret, saltBytes, iter) {
   const base = await crypto.subtle.importKey("raw", _te.encode(secret), "PBKDF2", false, ["deriveKey"]);
   return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: saltBytes, iterations: KDF_ITER, hash: "SHA-256" },
+    { name: "PBKDF2", salt: saltBytes, iterations: iter || KDF_ITER, hash: "SHA-256" },
     base,
     { name: "AES-GCM", length: 256 },
     false,
@@ -104,19 +107,21 @@ async function _aesDec(key, env) {
 async function neuerMasterKey() {
   return crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
 }
-/* Master Key mit einem Geheimnis (Passwort/Code) umschließen → {salt, iv, ct} */
+/* Ist ein Umschlag noch mit weniger Runden erstellt als heute üblich? */
+const umschlagAlt = (w) => !!w && (w.it || KDF_ALT) < KDF_ITER;
+/* Master Key mit einem Geheimnis (Passwort/Code) umschließen → {salt, iv, ct, it} */
 async function mkUmschliessen(mk, secret) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const key = await _kdfKey(secret, salt);
   const raw = _b64(await crypto.subtle.exportKey("raw", mk));
   const env = await _aesEnc(key, raw);
-  return { salt: _b64(salt), iv: env.iv, ct: env.ct };
+  return { salt: _b64(salt), iv: env.iv, ct: env.ct, it: KDF_ITER };
 }
 /* Umschlossenen Master Key mit dem Geheimnis öffnen → CryptoKey oder null */
 async function mkOeffnen(wrapped, secret) {
   if (!wrapped || !CRYPTO_OK) return null;
   try {
-    const key = await _kdfKey(secret, _unb64(wrapped.salt));
+    const key = await _kdfKey(secret, _unb64(wrapped.salt), wrapped.it || KDF_ALT);
     const rawB64 = await _aesDec(key, wrapped); // wirft bei falschem Geheimnis
     return await crypto.subtle.importKey("raw", _unb64(rawB64), { name: "AES-GCM" }, true, [
       "encrypt",
@@ -169,21 +174,68 @@ const rolleAus = () => ROLLE_KB; // neue Zugänge sind immer Kundenberater
 function localUsers() {
   return store.get("bw-users") || {};
 }
+/*
+ * Nutzersätze im Gerätespeicher: Name, Rolle, Team usw. liegen verschlüsselt
+ * ("s", AES-GCM mit dem Master Key). Offen bleiben nur DK-Nummer und die
+ * umschlossenen Schlüssel – das braucht die Anmeldung, bevor ein Schlüssel da ist.
+ */
+const NUTZER_OFFEN = ["dk", "mkByPw", "mkByCode"];
 async function userGet(dk) {
-  return localUsers()[dk] || null;
+  const r = localUsers()[dk];
+  if (!r) return null;
+  if (!r.s) return r;
+  const offen = {};
+  NUTZER_OFFEN.forEach((k) => {
+    if (r[k] !== undefined) offen[k] = r[k];
+  });
+  if (masterKey && CRYPTO_OK) {
+    try {
+      return { ...JSON.parse(await _aesDec(masterKey, r.s)), ...offen };
+    } catch (e) {
+      /* mit einem anderen Schlüssel versiegelt */
+    }
+  }
+  return offen;
 }
 /*
  * Nutzer lokal ablegen. "entferne" löscht ausdrücklich genannte Felder,
  * damit sich das Verhalten der früheren Datenbank-Fassung nicht ändert.
  */
 async function userSet(u, entferne) {
-  const all = localUsers();
   const rec = { ...u };
+  delete rec.s;
   (entferne || []).forEach((k) => {
     delete rec[k];
   });
-  all[u.dk] = rec;
+  let ablage = rec;
+  /* Versiegeln: eigener Satz und importierte Teamsätze (nicht fremde Gerätezugänge) */
+  const eigen = !me || u.dk === me.dk || !u.mkByPw;
+  if (masterKey && CRYPTO_OK && eigen) {
+    try {
+      const geheim = {};
+      Object.keys(rec).forEach((k) => {
+        if (!NUTZER_OFFEN.includes(k)) geheim[k] = rec[k];
+      });
+      ablage = { s: await _aesEnc(masterKey, JSON.stringify(geheim)) };
+      NUTZER_OFFEN.forEach((k) => {
+        if (rec[k] !== undefined) ablage[k] = rec[k];
+      });
+    } catch (e) {
+      ablage = rec;
+    }
+  }
+  const all = localUsers();
+  all[u.dk] = ablage;
   store.set("bw-users", all);
+}
+/* Nach der Anmeldung: noch offen liegende Sätze (eigener + Team) versiegeln */
+async function nutzerVersiegeln() {
+  if (!me || !masterKey) return;
+  const all = localUsers();
+  for (const dk of [me.dk, ...(me.team || [])]) {
+    const r = all[dk];
+    if (r && !r.s && (dk === me.dk || !r.mkByPw)) await userSet(r);
+  }
 }
 
 /* Zeitstempel: ohne Server einfach die Geräteuhr */

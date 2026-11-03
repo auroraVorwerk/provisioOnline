@@ -33,7 +33,11 @@ async function kontoKryptoAnlegen(u, pw, code) {
 /* Mit dem Passwort anmelden: Master Key öffnen (oder null bei falschem Passwort). */
 async function kontoOeffnenMitPw(u, pw) {
   const mk = await mkOeffnen(u && u.mkByPw, pw);
-  if (mk) masterKey = mk;
+  if (mk) {
+    masterKey = mk;
+    /* Ältere Umschläge (150.000 Runden) auf den heutigen Stand heben */
+    if (umschlagAlt(u.mkByPw)) u.mkByPw = await mkUmschliessen(mk, pw);
+  }
   return mk;
 }
 
@@ -294,6 +298,10 @@ async function istGeloescht(dk) {
   return false;
 }
 async function starteSitzung(u) {
+  /* Versiegelte Angaben (Name, Rolle, Team) mit dem nun offenen Schlüssel ergänzen */
+  const voll = await userGet(u.dk);
+  if (voll) u = { ...voll, ...u };
+  delete u.s;
   me = u;
   /* Einen lokal angepassten K70-Katalog übernehmen (sonst bleibt der Werkskatalog). */
   try {
@@ -304,6 +312,7 @@ async function starteSitzung(u) {
   me.lastLogin = Date.now();
   store.set("bw-lastseen", Date.now());
   await userSet(me); // lastLogin und evtl. neu gesetztes Passwort sichern
+  await nutzerVersiegeln();
   dataReady = false;
   applyData(await loadData(u.dk));
   shadow = JSON.parse(JSON.stringify(clean(dataBlob())));

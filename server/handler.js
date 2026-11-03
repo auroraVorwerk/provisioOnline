@@ -25,7 +25,10 @@ const speicher = () => (ablage = ablage || s3(ENV.BUCKET, ENV.S3_ACCESS, ENV.S3_
 const TOKEN_DAUER = 12 * 3600e3; // Sitzung: 12 Stunden
 const RESET_DAUER = 10 * 60e3; // Passwort neu setzen: 10 Minuten
 const EINLADUNG_DAUER = 7 * 86400e3; // Einladungscode: 7 Tage
-const MAX_FEHL = 5; // danach Sperre
+const MAX_FEHL = 5; // je Konto und Gerät/IP, danach Sperre
+const MAX_FEHL_KONTO = 50; // je Konto über alle IPs in 24 Stunden
+const KDF_NEU = 600000; // PBKDF2-Runden für neue Prüfwerte (OWASP 2023)
+const KDF_ALT = 150000; // Konten aus Online 1.0 (werden beim Anmelden hochgestuft)
 const IP_FENSTER = 15 * 60e3,
   IP_MAX = 30; // Anmelde-Versuche je IP und Fenster
 const MAX_DATEN = 25 * 1024 * 1024; // Obergrenze Datenbestand je Konto
@@ -54,7 +57,8 @@ const b64u = (s) => Buffer.from(s).toString("base64url");
 
 /* ---------- Token (zustandslos, HMAC-signiert) ---------- */
 function tokenBauen(art, uid, gen, dauer) {
-  const kopf = b64u(JSON.stringify({ a: art, u: uid, g: gen, x: Date.now() + dauer }));
+  const j = crypto.randomBytes(9).toString("base64url");
+  const kopf = b64u(JSON.stringify({ a: art, u: uid, g: gen, j, x: Date.now() + dauer }));
   return kopf + "." + hm(TOKEN_KEY, kopf);
 }
 function tokenPruefen(t, art) {
@@ -64,11 +68,14 @@ function tokenPruefen(t, art) {
   if (p.a !== art || !(p.x > Date.now())) throw new Error();
   return p;
 }
-const generation = (konto) => konto.auth.slice(0, 12); // ändert sich mit jedem Passwort
+/* Ändert sich mit jedem Passwort und mit „Auf allen Geräten abmelden“ */
+const generation = (konto) => konto.auth.slice(0, 12) + ":" + (konto.sg || 0);
 
 /* ---------- Prüfen von Eingaben ---------- */
 function umschlag(w) {
   if (!w || typeof w !== "object") return false;
+  if (w.it !== undefined && !(Number.isInteger(w.it) && w.it >= 100000 && w.it <= 5000000)) return false;
+  if (Object.keys(w).some((k) => !["salt", "iv", "ct", "it"].includes(k))) return false;
   return (
     /^[A-Za-z0-9+/=]{20,32}$/.test(w.salt || "") &&
     /^[A-Za-z0-9+/=]{16}$/.test(w.iv || "") &&
@@ -104,29 +111,55 @@ async function ipBremse(ip) {
   if (z.n > IP_MAX) throw new Fehler(429, "Zu viele Versuche. Bitte später erneut probieren.");
 }
 
-/* ---------- Sperre je Konto (auch für nicht vorhandene DK – keine Auskunft) ---------- */
+/*
+ * ---------- Sperre je Konto UND Gerät/IP ----------
+ * Fehlversuche sperren nur die Kombination aus Konto und Absender. So kann ein
+ * Angreifer ein fremdes Konto nicht absichtlich für die Inhaberin sperren.
+ * Zusätzlich gilt eine hohe Obergrenze je Konto über alle Absender (verteilte
+ * Angriffe). Auch für nicht vorhandene DK-Nummern – keine Auskunft.
+ */
 async function sperreLesen(uid) {
   const r = await speicher().lesen("l/" + uid + ".json");
-  return r ? r.daten : { fehl: 0, bis: 0 };
+  const s = r ? r.daten : {};
+  s.ip = s.ip || {};
+  s.tag = s.tag && s.tag.bis > Date.now() ? s.tag : { n: 0, bis: Date.now() + 86400e3 };
+  return s;
 }
-async function sperrePruefen(uid) {
+const minuten = (bis) => {
+  const min = Math.ceil((bis - Date.now()) / 60e3);
+  return `Zu viele Fehlversuche. Bitte in ${min} Minute${min === 1 ? "" : "n"} erneut versuchen.`;
+};
+async function sperrePruefen(uid, ip) {
   const s = await sperreLesen(uid);
-  if (s.bis > Date.now()) {
-    const min = Math.ceil((s.bis - Date.now()) / 60e3);
-    throw new Fehler(429, `Zu viele Fehlversuche. Bitte in ${min} Minute${min === 1 ? "" : "n"} erneut versuchen.`);
-  }
+  const ih = hm(PEPPER, "ip|" + ip).slice(0, 16);
+  const e = s.ip[ih];
+  if (e && e.bis > Date.now()) throw new Fehler(429, minuten(e.bis));
+  if (s.tag.n >= MAX_FEHL_KONTO) throw new Fehler(429, minuten(s.tag.bis));
+  s.ih = ih;
   return s;
 }
 async function fehlversuch(uid, s) {
-  s.fehl = (s.fehl || 0) + 1;
-  if (s.fehl >= MAX_FEHL) {
-    const runde = Math.floor(s.fehl / MAX_FEHL); // 15, 30, 60 … Minuten
-    s.bis = Date.now() + Math.min(24 * 60, 15 * 2 ** (runde - 1)) * 60e3;
+  const e = (s.ip[s.ih] = s.ip[s.ih] || { fehl: 0, bis: 0 });
+  e.fehl++;
+  if (e.fehl % MAX_FEHL === 0) {
+    const runde = e.fehl / MAX_FEHL; // 15, 30, 60 … Minuten
+    e.bis = Date.now() + Math.min(24 * 60, 15 * 2 ** (runde - 1)) * 60e3;
   }
-  await speicher().schreiben("l/" + uid + ".json", s);
+  e.zuletzt = Date.now();
+  s.tag.n++;
+  /* alte Einträge aufräumen */
+  Object.keys(s.ip).forEach((k) => {
+    if (s.ip[k].zuletzt < Date.now() - 2 * 86400e3) delete s.ip[k];
+  });
+  const { ih, ...rest } = s;
+  await speicher().schreiben("l/" + uid + ".json", rest);
 }
 async function erfolg(uid, s) {
-  if (s.fehl) await speicher().loeschen("l/" + uid + ".json");
+  if (s.ip[s.ih]) {
+    delete s.ip[s.ih];
+    const { ih, ...rest } = s;
+    await speicher().schreiben("l/" + uid + ".json", rest);
+  }
 }
 
 const FALSCH = "DK-Nummer oder Passwort falsch.";
@@ -144,8 +177,10 @@ async function angemeldet(ev) {
     throw new Fehler(401, "Bitte erneut anmelden.");
   }
   const k = await kontoLesen(p.u);
-  if (!k || generation(k.konto) !== p.g) throw new Fehler(401, "Bitte erneut anmelden.");
-  return { uid: p.u, ...k };
+  if (!k) throw new Fehler(401, "Bitte erneut anmelden.");
+  if (generation(k.konto) !== p.g) throw new Fehler(401, "Du wurdest abgemeldet. Bitte neu anmelden.", { grund: "abgemeldet" });
+  if ((k.konto.widerrufen || []).some((w) => w.j === p.j)) throw new Fehler(401, "Bitte erneut anmelden.", { grund: "abgemeldet" });
+  return { uid: p.u, j: p.j, x: p.x, ...k };
 }
 const sitzung = (uid, konto) => ({
   token: tokenBauen("s", uid, generation(konto), TOKEN_DAUER),
@@ -177,11 +212,14 @@ const AKTIONEN = {
     const st = speicher();
     const ek = einlKey(b.einladung);
     const e = await st.lesen(ek);
-    if (!e || e.daten.benutzt || !(e.daten.bis > Date.now()))
-      throw new Fehler(403, "Der Einladungscode ist ungültig oder abgelaufen.");
     const uid = uidVon(b.dk);
+    /* Codes aus der App gelten nur für die DK-Nummer, für die sie erstellt wurden */
+    const passt = e && (e.daten.fuer ? gleich(e.daten.fuer, uid) : e.daten.von === "admin");
+    if (!e || !passt || e.daten.benutzt || !(e.daten.bis > Date.now()))
+      throw new Fehler(403, "Der Einladungscode ist ungültig, abgelaufen oder gilt für eine andere DK-Nummer.");
     const konto = {
       v: 1,
+      it: KDF_NEU,
       auth: authHash(b.auth),
       rec: recHash(b.rec),
       mkByPw: b.mkByPw,
@@ -192,7 +230,7 @@ const AKTIONEN = {
     };
     /* Einladung zuerst verbrauchen (bedingt) – so gilt jeder Code genau einmal */
     const verbraucht = await st.schreiben(ek, { ...e.daten, benutzt: Date.now() }, { etag: e.etag });
-    if (!verbraucht) throw new Fehler(403, "Der Einladungscode ist ungültig oder abgelaufen.");
+    if (!verbraucht) throw new Fehler(403, "Der Einladungscode ist ungültig, abgelaufen oder gilt für eine andere DK-Nummer.");
     const neu = await st.schreiben("k/" + uid + ".json", konto, { neu: true });
     if (!neu) {
       await st.schreiben(ek, e.daten).catch(() => {}); // Code wieder freigeben
@@ -202,11 +240,19 @@ const AKTIONEN = {
     return { ...sitzung(uid, konto), einladen: konto.einladen };
   },
 
+  /* Runden für die Ableitung des Prüfwerts – für unbekannte DK derselbe Standard (keine Auskunft) */
+  async "POST /parameter"(b, ev) {
+    await ipBremse(ev.ip);
+    muss(DK_RE.test(b.dk || ""));
+    const k = await kontoLesen(uidVon(b.dk));
+    return { it: k ? k.konto.it || KDF_ALT : KDF_NEU };
+  },
+
   async "POST /anmelden"(b, ev) {
     await ipBremse(ev.ip);
     muss(DK_RE.test(b.dk || "") && B64_32.test(b.auth || ""), FALSCH);
     const uid = uidVon(b.dk);
-    const sp = await sperrePruefen(uid);
+    const sp = await sperrePruefen(uid, ev.ip);
     const k = await kontoLesen(uid);
     const h = authHash(b.auth);
     if (!k || !gleich(k.konto.auth, h)) {
@@ -216,6 +262,7 @@ const AKTIONEN = {
     await erfolg(uid, sp);
     return {
       ...sitzung(uid, k.konto),
+      it: k.konto.it || KDF_ALT,
       mkByPw: k.konto.mkByPw,
       mkByCode: k.konto.mkByCode,
       profil: k.konto.profil,
@@ -228,7 +275,7 @@ const AKTIONEN = {
     await ipBremse(ev.ip);
     muss(DK_RE.test(b.dk || "") && B64_32.test(b.rec || ""), "Code oder DK-Nummer falsch.");
     const uid = uidVon(b.dk);
-    const sp = await sperrePruefen(uid);
+    const sp = await sperrePruefen(uid, ev.ip);
     const k = await kontoLesen(uid);
     if (!k || !gleich(k.konto.rec, recHash(b.rec))) {
       await fehlversuch(uid, sp);
@@ -250,7 +297,7 @@ const AKTIONEN = {
     muss(B64_32.test(b.auth || "") && umschlag(b.mkByPw));
     const k = await kontoLesen(p.u);
     if (!k || generation(k.konto) !== p.g) throw new Fehler(401, "Die Zeit ist abgelaufen. Bitte noch einmal beginnen.");
-    const konto = { ...k.konto, auth: authHash(b.auth), mkByPw: b.mkByPw };
+    const konto = { ...k.konto, it: KDF_NEU, auth: authHash(b.auth), mkByPw: b.mkByPw, widerrufen: [] };
     if (!(await speicher().schreiben("k/" + p.u + ".json", konto, { etag: k.etag })))
       throw new Fehler(409, "Bitte noch einmal versuchen.");
     return { ...sitzung(p.u, konto), profil: konto.profil, einladen: !!konto.einladen };
@@ -261,10 +308,28 @@ const AKTIONEN = {
     const a = await angemeldet(ev);
     muss(B64_32.test(b.alt || "") && B64_32.test(b.auth || "") && umschlag(b.mkByPw));
     if (!gleich(a.konto.auth, authHash(b.alt))) throw new Fehler(403, "Das bisherige Passwort stimmt nicht.");
-    const konto = { ...a.konto, auth: authHash(b.auth), mkByPw: b.mkByPw };
+    const konto = { ...a.konto, it: KDF_NEU, auth: authHash(b.auth), mkByPw: b.mkByPw, widerrufen: [] };
     if (!(await speicher().schreiben("k/" + a.uid + ".json", konto, { etag: a.etag })))
       throw new Fehler(409, "Bitte noch einmal versuchen.");
     return sitzung(a.uid, konto);
+  },
+
+  /* Abmelden: diese Sitzung serverseitig ungültig machen */
+  async "POST /abmelden"(b, ev) {
+    const a = await angemeldet(ev);
+    const liste = (a.konto.widerrufen || []).filter((w) => w.x > Date.now()).slice(-200);
+    liste.push({ j: a.j, x: a.x });
+    await speicher().schreiben("k/" + a.uid + ".json", { ...a.konto, widerrufen: liste }, { etag: a.etag });
+    return { ok: true };
+  },
+
+  /* Auf allen Geräten abmelden: alle Sitzungen des Kontos ungültig */
+  async "POST /abmelden-alle"(b, ev) {
+    const a = await angemeldet(ev);
+    const konto = { ...a.konto, sg: (a.konto.sg || 0) + 1, widerrufen: [] };
+    if (!(await speicher().schreiben("k/" + a.uid + ".json", konto, { etag: a.etag })))
+      throw new Fehler(409, "Bitte noch einmal versuchen.");
+    return { ok: true };
   },
 
   /* Neuer Wiederherstellungs-Code (angemeldet; Passwort nötig) */
@@ -327,9 +392,14 @@ const AKTIONEN = {
   async "POST /einladung"(b, ev) {
     const a = await angemeldet(ev);
     if (!a.konto.einladen) throw new Fehler(403, "Dieser Zugang darf keine Einladungen erstellen.");
+    muss(DK_RE.test(b.dk || ""), "Bitte die DK-Nummer der eingeladenen Person eintragen.");
     const code = einladungNeu();
     const bis = Date.now() + EINLADUNG_DAUER;
-    await speicher().schreiben(einlKey(code), { von: a.uid, bis, einladen: !!b.einladen, erstellt: Date.now() }, { neu: true });
+    await speicher().schreiben(
+      einlKey(code),
+      { von: a.uid, fuer: uidVon(b.dk), bis, einladen: !!b.einladen, erstellt: Date.now() },
+      { neu: true },
+    );
     return { code, bis };
   },
 
@@ -393,7 +463,9 @@ async function handle(event) {
   } catch (e) {
     return antwort(400, { fehler: "Ungültige Anfrage." }, origin);
   }
-  const ip = String(hd["x-forwarded-for"] || hd["x-real-ip"] || "?").split(",")[0].trim();
+  /* Absender: X-Real-IP setzt der Scaleway-Eingang selbst (überschreibt Angaben des Clients).
+     X-Forwarded-For ist NICHT vertrauenswürdig – der erste Eintrag kommt vom Client. */
+  const ip = String(hd["x-real-ip"] || "?").trim();
   try {
     const erg = await fn(b, { headers: hd, ip });
     return antwort(200, erg, origin);

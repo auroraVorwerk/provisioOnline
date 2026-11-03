@@ -3,6 +3,18 @@
  *
  * Wochenfarben, Terminarten, Kontaktwege und feste Vorgaben.
  */
+/*
+ * Schutz gegen Einbetten in fremde Seiten (Clickjacking). GitHub Pages kann den
+ * Header X-Frame-Options / frame-ancestors nicht setzen – deshalb hier: Läuft die
+ * App in einem fremden Rahmen, bleibt sie unsichtbar und bricht ab.
+ */
+if (window.top !== window.self) {
+  document.documentElement.style.display = "none";
+  try {
+    window.top.location.replace(window.self.location.href);
+  } catch (e) {}
+  throw new Error("Provisio darf nicht eingebettet werden.");
+}
 const PAGES = {
   heute: "Heute",
   planer: "Planer",

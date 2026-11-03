@@ -10,6 +10,7 @@ zwischen Geräten. Die Offline-App (auroraVorwerk/provisio) läuft unabhängig d
 
 ## Unterschiede zur Offline-App
 - `js/78-online.js`, `css/24-online.css` – Anmeldung über den Server, Abgleich, Online-Konto.
+- `js/79-eingabeschutz.js` – wie `78-eingabeschutz.js` der Offline-App.
 - `js/16-cloud-sync.js` – eigener Speicher-Namensraum `pvo:` (gleiche Domain wie die Offline-App).
 - `js/47-motion.js`, `js/73-sicherung.js` – eigene Speicher-Schlüssel.
 - `js/39-einstellungen-team.js`, `js/60-einstellungen.js` – Passwort/Code auch beim Server ändern.

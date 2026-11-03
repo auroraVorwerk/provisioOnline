@@ -7,6 +7,65 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.0.1",
+    datum: "November 2026",
+    kurz: "Sicherheit vor dem Pentest",
+    teile: [
+      [
+        "Neu",
+        [
+          "Einladungscodes erstellst du jetzt für eine bestimmte DK-Nummer – nur diese Person kann sich damit registrieren.",
+          "Einstellungen → Online-Konto → „Auf allen Geräten abmelden“.",
+        ],
+      ],
+      [
+        "Sicherheit",
+        [
+          "Mehrere Verbesserungen vor dem externen Sicherheitstest – Details unter Security 2.1.",
+          "Die erste Anmeldung nach dem Update dauert einmalig etwas länger: Der Zugang wird auf die stärkere Verschlüsselung umgestellt.",
+        ],
+      ],
+    ],
+  },
+  {
+    v: "Security 2.1",
+    datum: "3. November 2026",
+    ab: "Online 1.0.1",
+    kurz: "Härtung vor dem externen Penetrationstest",
+    teile: [
+      ["Geltungsbereich", ["Gilt für Provisio Online ab Version 1.0.1: Eingabe und Anzeige aller Daten, Schlüsselableitung, Ablage des Nutzersatzes auf dem Gerät, Einbetten in fremde Seiten, PDF-Einlesen sowie Registrierung, Anmeldung, Sitzungen und Begrenzung von Fehlversuchen an der Schnittstelle."]],
+      [
+        "Anlass",
+        [
+          "Vorbereitung auf einen externen Penetrationstest. Eine eigene Prüfung ergab: Eingeschleustes HTML wurde bis zum nächsten Laden der App angezeigt, aber durch die Content-Security-Policy an der Ausführung gehindert. Weitere Punkte betreffen Stand der Technik und Härtung, nicht bekannte Angriffe.",
+          "Online: Die Bremse je IP-Adresse ließ sich durch eine gefälschte Absender-Angabe umgehen; das wurde bei der eigenen Prüfung festgestellt und behoben.",
+        ],
+      ],
+      [
+        "Maßnahmen",
+        [
+          "Eingaben werden schon beim Tippen und Einfügen entschärft: Spitze Klammern sowie einfache und doppelte Anführungszeichen werden in jedem Textfeld sofort durch gleich aussehende, unschädliche Zeichen ersetzt. Eingeschleustes Markup kann dadurch zu keinem Zeitpunkt in die Oberfläche gelangen – auch nicht vor dem nächsten Laden der App. Die Content-Security-Policy, die fremde und eingebettete Skripte blockiert, bleibt als zweite Schutzschicht bestehen.",
+          "Schlüsselableitung verstärkt: PBKDF2-SHA-256 mit 600.000 statt 150.000 Iterationen (OWASP-Empfehlung 2023). Bestehende Zugänge werden beim nächsten Anmelden automatisch umgestellt; ältere Sicherungsdateien lassen sich weiterhin öffnen.",
+          "Name, Rolle und Teamliste liegen im Gerätespeicher jetzt ebenfalls verschlüsselt (AES-256-GCM mit dem Master Key). Unverschlüsselt bleiben nur DK-Nummer und die umschlossenen Schlüssel, die zum Anmelden nötig sind.",
+          "Schutz gegen Einbetten in fremde Seiten (Clickjacking): Wird die App in einem fremden Rahmen geöffnet, bleibt sie unsichtbar und startet nicht.",
+          "PDF-Leser aktualisiert auf pdf.js 6.4.299 (zuvor 3.11.174). Damit ist die Lücke CVE-2024-4367 auch in der Bibliothek selbst behoben; die Ausführung von Code aus PDF-Dateien bleibt zusätzlich abgeschaltet (isEvalSupported: false).",
+          "Einladungscodes gelten nur noch für die DK-Nummer, für die sie erstellt wurden. Eine Registrierung unter fremder DK-Nummer ist damit ausgeschlossen.",
+          "Sperre nach Fehlversuchen gilt je Konto und Absender (IP-Adresse): Ein Angreifer kann ein fremdes Konto nicht mehr absichtlich für die Inhaberin sperren. Zusätzlich höchstens 50 Fehlversuche je Konto und Tag über alle Absender.",
+          "Die Absender-Adresse wird nur noch aus der vom Scaleway-Eingang gesetzten Angabe (X-Real-IP) gelesen. Die vom Client fälschbare Angabe X-Forwarded-For wird nicht mehr verwendet.",
+          "Abmelden beendet die Sitzung auch auf dem Server (Sperrliste je Konto). Neu: „Auf allen Geräten abmelden“, etwa bei Verlust eines Geräts. Eine Passwortänderung beendet alle Sitzungen.",
+        ],
+      ],
+      [
+        "Hinweise",
+        [
+          "Die App wird während der Testphase über GitHub Pages ausgeliefert. Dort lassen sich HTTP-Sicherheitsheader (z. B. X-Frame-Options, frame-ancestors, Permissions-Policy) nicht frei setzen; die Content-Security-Policy ist als Meta-Angabe gesetzt, der Schutz gegen Einbetten im Code umgesetzt. Für den Regelbetrieb ist eine interne Adresse mit eigener Datenbank vorgesehen, auf der diese Header serverseitig gesetzt werden.",
+          "Für Nutzerinnen und Nutzer ändert sich nichts. Die erste Anmeldung nach dem Update dauert einmalig etwas länger.",
+          "Einladungscodes, die vor Version 1.0.1 erstellt wurden, gelten bis zu ihrem Ablauf weiter.",
+        ],
+      ],
+    ],
+  },
+  {
     v: "Online 1.0",
     datum: "November 2026",
     kurz: "Provisio Online: Anmeldung, Abgleich zwischen iPhone und iPad",

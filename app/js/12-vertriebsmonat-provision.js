@@ -4,7 +4,7 @@
  * Vertriebskalender (4-4-5), Umsatz, Provisionsstufen und Ziele.
  */
 const MWST = 1.19;
-const BUILD = "Provisio Online 1.0 (Beta 1.8.2) · 03.11.2026"; // steht unten im Profil – zum Prüfen, welcher Stand geladen ist
+const BUILD = "Provisio Online 1.0.1 (Beta 1.8.2) · 03.11.2026"; // steht unten im Profil – zum Prüfen, welcher Stand geladen ist
 const TIERS = [
   { u: 3000, b: 0.04 },
   { u: 5000, b: 0.08 },

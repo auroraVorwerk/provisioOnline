@@ -12,16 +12,15 @@
   function leserLaden() {
     if (window.pdfjsLib) return Promise.resolve();
     if (leserLaedt) return leserLaedt;
-    leserLaedt = new Promise((ok, fehl) => {
-      const s = document.createElement("script");
-      s.src = "vendor/pdf.min.js";
-      s.onload = () => ok();
-      s.onerror = () => {
+    /* pdf.js 6.4 (Legacy-Build) als Modul – nur aus der eigenen App (CSP 'self') */
+    leserLaedt = import(new URL("vendor/pdf.min.mjs", document.baseURI).href)
+      .then((m) => {
+        window.pdfjsLib = m;
+      })
+      .catch(() => {
         leserLaedt = null;
-        fehl(new Error("Der PDF-Leser konnte nicht geladen werden."));
-      };
-      document.head.appendChild(s);
-    });
+        throw new Error("Der PDF-Leser konnte nicht geladen werden.");
+      });
     return leserLaedt;
   }
 
