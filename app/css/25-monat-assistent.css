@@ -1,4 +1,4 @@
-/* Beta 1.9 – Monatsansicht im Jahresrückblick und „Frag Provisio“ */
+/* Beta 1.9 – Monatsansicht im Jahresrückblick und Donna (Assistentin) */
 .maklick {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -72,7 +72,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Frag Provisio ---------- */
+/* ---------- Donna (Assistentin) ---------- */
 .fragpv {
   position: fixed;
   inset: 0;

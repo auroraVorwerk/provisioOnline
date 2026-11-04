@@ -1,5 +1,5 @@
 /**
- * „Frag Provisio“ – Assistent (Beta 1.9)
+ * Donna – die Assistentin in Provisio (Beta 1.9, Name ab 1.9.1)
  *
  * Keine echte KI und keine Verbindung nach außen: Die Frage wird auf dem Gerät
  * in Wörter zerlegt, mit Begriffsgruppen verglichen (Synonyme, Umgangssprache,
@@ -611,7 +611,8 @@
   /* ---------- Die Fragen ---------- */
   /* g: Gruppen, die alle vorkommen müssen (je Eintrag „a|b“ = a oder b); b: Bonus; n: darf nicht vorkommen */
   const FRAGEN = [
-    { id: "hallo", g: ["hallo|danke"], n: ["termin", "umsatz", "prov", "geraet"], f: (k) => ({ text: hat(k.tok, "danke") ? "Gern! Frag mich jederzeit wieder." : "Hallo! Frag mich zu deinen Terminen, Umsätzen, Zielen, deinem Team, dem K70 oder zu Kobold-Geräten. Unten findest du Beispiele." }) },
+    { id: "hallo", g: ["hallo|danke"], n: ["termin", "umsatz", "prov", "geraet"], f: (k) => ({ text: hat(k.tok, "danke") ? "Gern. Dafür bin ich da." : "Hi! Ich bin Donna. Frag mich zu Terminen, Umsatz, Zielen, Team, K70 oder Kobold-Geräten – oder lass mich einen Termin eintragen." }) },
+    { id: "werbistdu", g: [], wenn: (k) => /wer bist du|wie heisst du|bist du (eine )?ki|was bist du/.test(k.s), f: () => ({ text: "Ich bin Donna, deine Assistentin in Provisio. Ich kenne deine Termine, Zahlen und Kunden – und das Kobold-Reparaturhandbuch. Ich bin keine echte KI: Alles läuft auf deinem Gerät, nichts wird verschickt." }), prio: 3 },
     { id: "koennen", g: [], wenn: (k) => /was (kannst|weisst) du|wobei hilfst|was kann ich (dich )?fragen|was kann provisio/.test(k.s), f: () => ({ text: faehigkeiten() }), prio: 3 },
 
     /* Kobold */
@@ -679,6 +680,7 @@
       "Kunden: „Wann war ich zuletzt bei Müller?“",
       "Team, K70, Fahrtenbuch, Statistik",
       "Kobold: „Mein VK7 zeigt Error 11 – was jetzt?“",
+      "Aufträge: „Buch mir einen Termin für Mario Müller morgen 12 Uhr“ – fehlende Angaben frage ich nach",
     ], 10)}<p class="fpklein">Ich bin keine echte KI: Alles läuft auf deinem Gerät, nichts wird verschickt.</p>`;
   }
 
@@ -964,6 +966,7 @@
       code: fehlercodeErkennen(frage),
       ctx,
     };
+    if (istTerminAuftrag(s)) return aufgabeStart(k);
     let best = null;
     FRAGEN.forEach((q) => {
       let sc = 0;
@@ -991,13 +994,14 @@
     try {
       return best.q.f(k);
     } catch (e) {
-      console.warn("Frag Provisio:", e);
+      console.warn("Donna:", e);
       return { text: "Dabei ist etwas schiefgegangen. Versuch es bitte noch einmal anders." };
     }
   }
 
   const BEISPIELE = [
     "Was steht heute noch an?",
+    "Buch mir einen Termin für Mario Müller morgen 12 Uhr",
     "Wann ist mein nächster Kundentermin?",
     "Wann hab ich morgen Zeit für einen Kundentermin?",
     "Wie viele Termine habe ich diese Woche?",
@@ -1031,6 +1035,341 @@
     const out = [];
     while (out.length < n && l.length) out.push(l.splice(Math.floor(Math.random() * l.length), 1)[0]);
     return out;
+  }
+
+  /*
+   * ---------- Aufgaben: „Buch mir einen Termin …“ (Beta 1.9.1) ----------
+   * Der Assistent liest aus dem Satz, was schon da ist (Name, Tag, Uhrzeit,
+   * Quelle, Adresse, Telefon), fragt das Fehlende nacheinander ab, schlägt
+   * bekannte Kunden vor, prüft Überschneidungen und speichert erst nach
+   * „Ja, eintragen“. „Abbrechen“ beendet jederzeit.
+   */
+  let aufgabe = null;
+  const VERB = /\b(buch|buche|buchen|trag|trage|eintragen|leg|lege|anlegen|erstell|erstelle|erstellen|plan|plane|planen|vereinbar|vereinbare|setz|setze|mach mir|mache mir|reservier)\w*/;
+  const istTerminAuftrag = (s) => VERB.test(s) && / (termin|kundentermin|vorfuehrung|besuch|demo)/.test(s) && !/wann (hab|habe|ist)|wie (lege|mache|kann)|zeit fuer/.test(s);
+  const SKIP = /^(weiss (ich )?nicht|keine?|nein|spaeter|ueberspringen|weiter|egal|leer|nichts|-|unbekannt|hab (ich )?nicht)\b/;
+  const ABBRUCH = /^(abbrechen|abbruch|stopp|stop|vergiss es|lass es|cancel)\b/;
+  const QUELL_W = [
+    ["Festgebietsbegehung", /festgebiet|begehung|fgb|tuer|klingel/],
+    ["Promotion", /promo|messe|stand/],
+    ["Vertriebsadresse", /vertriebsadresse|adresse von vorwerk|lead|zentrale/],
+    ["Empfehlung", /empfehl|empfohlen/],
+    ["Premium CheckIn", /premium|checkin|check in/],
+    ["Wiederbesuch", /wiederbesuch|bestandskunde|folgetermin|meldet sich|wieder/],
+  ];
+  function quelleAus(s) {
+    const t = QUELL_W.find(([, re]) => re.test(s));
+    return t ? t[0] : null;
+  }
+  function uhrzeitAus(s) {
+    let m = /(?:um |gegen |ab )?(\d{1,2})[:.](\d{2})(?: ?uhr)?/.exec(s);
+    if (m && +m[1] <= 23 && +m[2] < 60 && !/\d{1,2}\.\d{1,2}\./.test(m[0] + ".")) return [+m[1], Math.round(+m[2] / 15) * 15];
+    m = /(?:um |gegen |ab )(\d{1,2})\b/.exec(s) || /\b(\d{1,2}) ?(?:uhr|h)\b/.exec(s);
+    if (m && +m[1] <= 23) return [+m[1], 0];
+    m = /halb (\d{1,2})/.exec(s);
+    if (m) return [(+m[1] - 1 + 24) % 24, 30];
+    return null;
+  }
+  function telAus(roh) {
+    const m = /(\+?\d[\d\s/()-]{5,}\d)/.exec(roh);
+    if (!m) return null;
+    const ziffern = m[1].replace(/\D/g, "");
+    return ziffern.length >= 6 && ziffern.length <= 15 && !/^\d{5}$/.test(ziffern) ? m[1].trim() : null;
+  }
+  /* „Hauptstr. 5, 41460 Neuss“ · „Hauptstraße 5b Neuss 41460“ · „41460 Neuss“ */
+  function adresseAus(roh) {
+    const t = String(roh).replace(/\s+/g, " ").trim();
+    const a = {};
+    const plz = /\b(\d{5})\b/.exec(t);
+    if (plz) a.plz = plz[1];
+    const sh = /([A-Za-zÄÖÜäöüß.\- ]{3,}?)\s+(\d{1,4}\s?[a-zA-Z]?)(?=[\s,]|$)/.exec(t.replace(/\b\d{5}\b/, " "));
+    if (sh) {
+      a.str = sh[1].replace(/^(in der|in die|im|in|am|an der|auf der|bei)\s+/i, "").trim();
+      a.hnr = sh[2].replace(/\s/g, "");
+    }
+    let ort = t;
+    if (plz) {
+      const nach = t.slice(t.indexOf(plz[1]) + 5).replace(/^[\s,]+/, "");
+      ort = nach || "";
+    } else if (sh) ort = t.slice(t.indexOf(sh[0]) + sh[0].length).replace(/^[\s,]+/, "");
+    else ort = "";
+    ort = ort.replace(/[,\d]+.*$/, "").trim();
+    if (ort && /^[A-Za-zÄÖÜäöüß .\-]{2,}$/.test(ort)) a.ort = ort;
+    return Object.keys(a).length ? a : null;
+  }
+  function nameAus(roh) {
+    const m = /\b(?:für|fuer|mit|bei)\s+((?:herrn?|frau|familie)\s+)?([A-ZÄÖÜa-zäöüß][\wäöüßÄÖÜ.\-]*(?:\s+[A-ZÄÖÜa-zäöüß][\wäöüßÄÖÜ.\-]*){0,2})/i.exec(roh);
+    if (!m) return null;
+    const STOP = /^(morgen|uebermorgen|übermorgen|heute|am|um|ab|gegen|nächste|naechste|diese|kommende|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|in|im|kw|einen|ein|den|termin|\d.*)$/i;
+    const teile = m[2].split(/\s+/);
+    const name = [];
+    for (const t of teile) {
+      if (STOP.test(t)) break;
+      name.push(t.replace(/[.,]$/, ""));
+    }
+    if (!name.length) return null;
+    const anrede = m[1] ? (/frau/i.test(m[1]) ? "Frau" : /herr/i.test(m[1]) ? "Herr" : "") : "";
+    const gross = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+    return name.length === 1 ? { nachname: gross(name[0]), anrede } : { vorname: gross(name[0]), nachname: name.slice(1).map(gross).join(" "), anrede };
+  }
+  /* Bekannte Person mit Adresse/Telefon (Termine, Potenzial, Empfehlungen, Interessenten) */
+  function bekannt(d) {
+    const nn = normal(d.nachname),
+      nv = normal(d.vorname || "");
+    const l = [];
+    Object.keys(entries).forEach((k) => {
+      const e = entries[k];
+      if (["kunde", "premium"].includes(e.kind)) l.push({ ...e, _q: "Termin vom " + fmt(fromDk(k.split("|")[0])), _tag: k.split("|")[0] });
+    });
+    potenzial.forEach((p) => l.push({ ...p, _q: "Potenzialliste" }));
+    empfehlungen.forEach((p) => l.push({ ...p, _q: "Empfehlungsliste", _quelle: "Empfehlung" }));
+    interessenten.forEach((p) => l.push({ ...p, _q: "Interessenten", _quelle: p.quelle }));
+    const treffer = l.filter((p) => normal(p.nachname) === nn && (!nv || !p.vorname || normal(p.vorname) === nv) && (p.str || p.strasse || p.plz || p.telefon));
+    treffer.sort((a, b) => String(b._tag || "").localeCompare(String(a._tag || "")));
+    return treffer[0] || null;
+  }
+  const adrText = (d) => [[d.str, d.hnr].filter(Boolean).join(" "), [d.plz, d.ort].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+  const zeitText = (d) => `${datumLang(fromDk(d.tag))}, ${pad(d.h)}:${pad(d.min || 0)} Uhr`;
+  function konflikt(d) {
+    const e = entries[key(d.tag, d.h)];
+    if (e) return { e, h: d.h };
+    const b = blockedSet(d.tag).get(d.h);
+    if (b && !b.soft) {
+      /* welcher Eintrag reicht in diese Stunde hinein? */
+      const x = eintraegeAm(d.tag).filter((y) => y.h < d.h && (toDec(y.e.bis || "") || 0) > d.h).pop();
+      return x ? { e: x.e, h: x.h } : { belegt: true };
+    }
+    /* Kundentermin dauert ~2 Std.: auch die Stunde danach prüfen */
+    const e2 = entries[key(d.tag, d.h + 1)];
+    if (e2 && !["privat", "individuell"].includes(e2.kind)) return { e: e2, h: d.h + 1, danach: true };
+    return null;
+  }
+
+  function aufgabeStart(k) {
+    const roh = k.roh;
+    const d = { quelle: quelleAus(k.s), notiz: "" };
+    const n = nameAus(roh);
+    if (n) Object.assign(d, n);
+    if (k.zeit && k.zeit.art === "tag") d.tag = k.zeit.von;
+    const u = uhrzeitAus(k.s);
+    if (u) [d.h, d.min] = u;
+    const tel = telAus(roh.replace(/\b\d{1,2}[:.]\d{2}\b|\b\d{1,2} ?uhr\b/gi, ""));
+    if (tel) d.telefon = tel;
+    aufgabe = { typ: "termin", d, frage: null, gefragt: {} };
+    return aufgabeWeiter(null);
+  }
+  /* Nächste offene Angabe erfragen – oder zusammenfassen */
+  function aufgabeWeiter(antwort) {
+    const a = aufgabe;
+    const d = a.d;
+    if (antwort !== null) {
+      const roh = String(antwort).trim();
+      const s = " " + normal(roh) + " ";
+      const ns = normal(roh);
+      if (ABBRUCH.test(ns)) {
+        aufgabe = null;
+        return { text: "Okay, abgebrochen – es wurde nichts eingetragen." };
+      }
+      const skip = SKIP.test(ns);
+      let ns2 = "";
+      const f = a.frage;
+      if (f === "tag") {
+        const z = zeitErkennen(roh);
+        if (z && z.art === "tag") d.tag = z.von;
+        else return { text: "Welcher Tag? Zum Beispiel „morgen“, „Freitag“ oder „12.11.“.", chips: ["heute", "morgen", "übermorgen"] };
+        const u = uhrzeitAus(s);
+        if (u) [d.h, d.min] = u;
+      } else if (f === "uhrzeit") {
+        const u = uhrzeitAus(s) || (/^\s*(\d{1,2})\s*$/.test(roh) ? [+roh, 0] : null);
+        if (!u) return { text: "Um wie viel Uhr? Zum Beispiel „12 Uhr“ oder „14:30“." };
+        [d.h, d.min] = u;
+      } else if (f === "konflikt") {
+        if (/^(ja|trotzdem|egal|passt|ok)/.test(ns)) d.trotzdem = true;
+        else {
+          const u = uhrzeitAus(s) || (/^\s*(\d{1,2})\s*$/.test(roh) ? [+roh, 0] : null);
+          const z = zeitErkennen(roh);
+          if (z && z.art === "tag") d.tag = z.von;
+          if (u) [d.h, d.min] = u;
+          if (!u && !(z && z.art === "tag")) return { text: "Nenn mir eine andere Uhrzeit (z. B. „15 Uhr“) – oder „trotzdem“, wenn er dort hin soll.", chips: ["trotzdem"] };
+        }
+      } else if (f === "name") {
+        const n = nameAus("für " + roh);
+        if (!n) return { text: "Wie heißt die Kundin bzw. der Kunde? Vor- und Nachname." };
+        Object.assign(d, n);
+      } else if (f === "bekannt") {
+        if (/^(ja|jo|klar|gern|genau|passt|richtig|stimmt|uebernehm)/.test(ns)) {
+          const b = a.vorschlag;
+          ["vorname", "anrede", "str", "hnr", "plz", "ort", "telefon", "lat", "lon"].forEach((x) => {
+            if (b[x] && !d[x]) d[x] = b[x];
+          });
+          if (!d.str && b.strasse) d.str = b.strasse;
+          if (!d.quelle && b._quelle && QUELLEN.includes(b._quelle)) d.quelle = b._quelle;
+          if (!d.quelle && b._tag) d.quelle = "Wiederbesuch";
+        }
+        a.gefragt.bekannt = true;
+      } else if (f === "quelle") {
+        const q = quelleAus(s) || QUELLEN.find((x) => normal(x) === ns);
+        if (!q) return { text: "Welche Quelle hat der Termin?", chips: QUELLEN.slice() };
+        d.quelle = q;
+      } else if (f === "adresse") {
+        if (!skip) {
+          const ad = adresseAus(roh);
+          if (!ad) return { text: "Das konnte ich nicht als Adresse lesen. Schreib sie so: „Hauptstraße 5, 41460 Neuss“ – oder „später“.", chips: ["später"] };
+          Object.assign(d, ad);
+          if (d.plz && !/^\d{5}$/.test(d.plz)) delete d.plz;
+        }
+        a.gefragt.adresse = true;
+      } else if (f === "plz") {
+        if (!skip) {
+          const m = /\b(\d{5})\b/.exec(roh);
+          if (!m) return { text: "Die PLZ hat genau 5 Ziffern – oder „später“.", chips: ["später"] };
+          d.plz = m[1];
+          const rest = roh.replace(m[1], "").replace(/[,]/g, " ").trim();
+          if (rest && !d.ort && /^[A-Za-zÄÖÜäöüß .\-]{2,}$/.test(rest)) d.ort = rest;
+        }
+        a.gefragt.plz = true;
+      } else if (f === "telefon") {
+        if (!skip) {
+          const t = telAus(roh);
+          if (!t) return { text: "Das sieht nicht nach einer Telefonnummer aus. Nochmal – oder „später“.", chips: ["später"] };
+          d.telefon = t;
+        }
+        a.gefragt.telefon = true;
+      } else if (f === "notiz") {
+        if (/^(ja )?(eintragen|speichern|passt|fertig)$/.test(ns)) ns2 = "nein";
+        if (/^(ja|jo|gern|klar)$/.test(ns)) return { text: "Was soll in der Notiz stehen?", chips: ["Abbrechen"], aufgabe: true };
+        if (!skip && !ns2 && !/^(nein|keine|nichts)/.test(ns)) d.notiz = roh.replace(/^(ja|notiz)[,:]?\s*/i, "");
+        a.gefragt.notiz = true;
+      } else if (f === "bestaetigen") {
+        if (/^(ja|jo|ok|okay|passt|speicher|eintragen|genau|mach|los|bestaetig)/.test(ns)) return aufgabeSpeichern();
+        /* Korrekturen direkt im Satz: „nein, 13 Uhr“, „Telefon 0171…“, „Quelle Promotion“ */
+        let geaendert = false;
+        const z = zeitErkennen(roh);
+        if (z && z.art === "tag") (d.tag = z.von), (geaendert = true);
+        const u = uhrzeitAus(s);
+        if (u) ([d.h, d.min] = u), (geaendert = true);
+        const q = quelleAus(s);
+        if (q && /quelle|ueber|von/.test(s)) (d.quelle = q), (geaendert = true);
+        const t = /tel|nummer|handy/.test(s) && telAus(roh);
+        if (t) (d.telefon = t), (geaendert = true);
+        if (/adresse|strasse|wohnt/.test(s)) {
+          const ad = adresseAus(roh.replace(/^.*?(adresse|strasse|wohnt( in)?)\s*/i, ""));
+          if (ad) Object.assign(d, ad), (geaendert = true);
+        }
+        if (/notiz/.test(s)) (d.notiz = roh.replace(/^.*?notiz:?\s*/i, "")), (geaendert = true);
+        if (!geaendert) return { text: "Soll ich ihn so eintragen? Sag „ja“ – oder was geändert werden soll (z. B. „13 Uhr“, „Telefon 0171 …“). „Abbrechen“ verwirft ihn.", chips: ["Ja, eintragen", "Abbrechen"] };
+        delete d.trotzdem;
+      }
+    }
+
+    /* Was fehlt noch? */
+    const frag = (feld, text, chips) => {
+      a.frage = feld;
+      return { text, chips: chips || ["Abbrechen"], aufgabe: true };
+    };
+    const wer = () => esc([d.anrede, d.vorname, d.nachname].filter(Boolean).join(" ")) || "den Kunden";
+    if (!d.nachname) return frag("name", "Für wen soll ich den Termin eintragen? Vor- und Nachname.");
+    if (!d.tag) return frag("tag", `An welchem Tag ist der Termin mit ${wer()}?`, ["heute", "morgen", "übermorgen", "Abbrechen"]);
+    if (d.h === undefined) {
+      const frei = freieFenster(d.tag).map(([x, y]) => `${hm(x)}–${hm(y)}`);
+      return frag("uhrzeit", `Um wie viel Uhr${frei.length ? ` (frei: ${frei.join(", ")})` : ""}?`, ["10 Uhr", "14 Uhr", "18 Uhr", "Abbrechen"]);
+    }
+    if (d.h < 7 || d.h > 22) {
+      delete d.h;
+      return frag("uhrzeit", "Der Planer geht von 7 bis 22 Uhr. Um wie viel Uhr soll der Termin sein?");
+    }
+    if (d.tag < dk(new Date()) && !a.gefragt.vergangen) {
+      a.gefragt.vergangen = true;
+      a.frage = "konflikt";
+      return { text: `Der ${fmt(fromDk(d.tag))} liegt in der Vergangenheit. Trotzdem eintragen oder anderer Tag?`, chips: ["trotzdem", "morgen", "Abbrechen"], aufgabe: true };
+    }
+    const kf = !d.trotzdem && konflikt(d);
+    if (kf) {
+      const frei = freieFenster(d.tag).map(([x, y]) => `${hm(x)}–${hm(y)}`);
+      const was = kf.e ? `${kf.danach ? "Kurz danach" : "Da"} steht schon: ${beschreibe({ e: kf.e, h: kf.h })}.` : "Die Zeit ist schon belegt.";
+      return frag("konflikt", `${was} ${kf.danach ? "Trotzdem um " + pad(d.h) + ":" + pad(d.min || 0) + " Uhr?" : "Welche andere Uhrzeit?"}${frei.length ? ` Frei: ${frei.join(", ")}.` : ""}`, kf.danach ? ["trotzdem", "Abbrechen"] : ["Abbrechen"]);
+    }
+    if (!a.gefragt.bekannt && !(d.str || d.plz || d.telefon)) {
+      const b = bekannt(d);
+      a.gefragt.bekannt = true;
+      if (b) {
+        a.vorschlag = b;
+        return frag("bekannt", `Ich kenne ${esc([b.vorname, b.nachname].filter(Boolean).join(" "))} schon (${esc(b._q)}): ${esc(adrText({ str: b.str || b.strasse, hnr: b.str ? b.hnr : "", plz: b.plz, ort: b.ort }) || "ohne Adresse")}${b.telefon ? ", Tel. " + esc(b.telefon) : ""}. Daten übernehmen?`, ["Ja", "Nein", "Abbrechen"]);
+      }
+    }
+    if (!d.quelle) return frag("quelle", "Welche Quelle hat der Termin?", [...QUELLEN, "Abbrechen"]);
+    if (!d.str && !a.gefragt.adresse) return frag("adresse", `Wie lautet die Adresse? (z. B. „Hauptstraße 5, 41460 Neuss“)`, ["später", "Abbrechen"]);
+    if (d.str && !d.plz && !a.gefragt.plz) return frag("plz", "Und die PLZ (und der Ort)?", ["später", "Abbrechen"]);
+    if (!d.telefon && !a.gefragt.telefon) return frag("telefon", `Telefonnummer von ${wer()}?`, ["später", "Abbrechen"]);
+    if (!a.gefragt.notiz) return frag("notiz", "Noch eine Notiz zum Termin?", ["Nein", "Abbrechen"]);
+    a.frage = "bestaetigen";
+    const fehlt = [!d.str && "Adresse", !d.plz && "PLZ", !d.telefon && "Telefon"].filter(Boolean);
+    return {
+      text: `<p>Soll ich das so eintragen?</p>${liste(
+        [
+          `<b>Kundentermin</b> · ${zeitText(d)}`,
+          `${wer()}`,
+          `Quelle: ${esc(d.quelle)}`,
+          adrText(d) ? esc(adrText(d)) : "Adresse: später",
+          d.telefon ? "Tel. " + esc(d.telefon) : "Telefon: später",
+          d.notiz ? "Notiz: " + esc(d.notiz) : "",
+        ].filter(Boolean),
+        8,
+      )}${fehlt.length ? `<p class="fpklein">${fehlt.join(", ")} kannst du später im Termin nachtragen.</p>` : ""}`,
+      chips: ["Ja, eintragen", "Abbrechen"],
+      aufgabe: true,
+    };
+  }
+  function aufgabeSpeichern() {
+    const d = aufgabe.d;
+    aufgabe = null;
+    const k = key(d.tag, d.h);
+    const alt = entries[k];
+    if (alt && !d.trotzdem) return { text: "In der Zwischenzeit ist dort etwas eingetragen worden – ich habe nichts überschrieben. Sag mir eine andere Uhrzeit." };
+    const e = {
+      kind: "kunde",
+      vorname: d.vorname || "",
+      nachname: d.nachname,
+      str: d.str || "",
+      hnr: d.hnr || "",
+      strasse: [d.str, d.hnr].filter(Boolean).join(" "),
+      plz: d.plz || "",
+      ort: d.ort || "",
+      telefon: d.telefon || "",
+      quelle: d.quelle,
+    };
+    if (d.anrede) e.anrede = d.anrede;
+    if (d.notiz) e.notiz = d.notiz;
+    if (d.lat && d.lon) (e.lat = +d.lat), (e.lon = +d.lon);
+    if (d.min) e.start = `${pad(d.h)}:${pad(d.min)}`;
+    let ziel = k;
+    if (alt) {
+      /* „trotzdem“ auf belegter Startstunde: nächste freie Stunde als Schlüssel, Uhrzeit bleibt */
+      return { text: "Zur gleichen Startzeit steht schon ein Termin – zwei Termine in einer Stunde gehen im Planer nicht. Bitte eine andere Uhrzeit wählen." };
+    }
+    entries[ziel] = e;
+    try {
+      renderAll();
+    } catch (x) {
+      saveData();
+    }
+    return {
+      text: `✅ Eingetragen: <b>Kundentermin ${zeitText(d)}</b> bei ${esc([d.vorname, d.nachname].filter(Boolean).join(" "))}.`,
+      knoepfe: [
+        {
+          text: "Im Planer zeigen",
+          aktion: () => {
+            monday = mondayOf(fromDk(d.tag));
+            tagWahl = (fromDk(d.tag).getDay() + 6) % 7;
+            location.hash = "#planer";
+            try {
+              renderAll();
+            } catch (x) {}
+          },
+        },
+      ],
+      chips: ["Was steht " + (d.tag === dk(plus(heuteD(), 1)) ? "morgen" : "am " + fmt(fromDk(d.tag)).slice(0, 6)) + " an?"],
+    };
   }
 
   /* ---------- Oberfläche ---------- */
@@ -1091,7 +1430,7 @@
     text = String(text || "").trim();
     if (!text || !ebene) return;
     blase("ich", esc(text));
-    const a = beantworten(text);
+    const a = aufgabe && !istTerminAuftrag(" " + normal(text) + " ") ? aufgabeWeiter(text) : beantworten(text);
     setTimeout(() => {
       blase("pv", a.text, a);
       chipsSetzen(a.chips);
@@ -1103,9 +1442,9 @@
     ebene = document.createElement("section");
     ebene.className = "fragpv";
     ebene.setAttribute("role", "dialog");
-    ebene.setAttribute("aria-label", "Frag Provisio");
+    ebene.setAttribute("aria-label", "Donna");
     ebene.innerHTML = `<div class="fpkopf"><button type="button" class="fpzu" aria-label="Schließen">✕</button>
-        <div class="fptitel"><b>Frag Provisio</b><span>antwortet aus deinen Daten · offline</span></div>
+        <div class="fptitel"><b>Donna</b><span>deine Assistentin · offline</span></div>
         <button type="button" class="fplaut" aria-pressed="${vorlesen}" title="Antworten vorlesen">🔊</button></div>
       <div class="fplog" aria-live="polite"></div>
       <div class="fpchips"></div>
@@ -1132,12 +1471,13 @@
       inp.value = "";
       fragen(t);
     };
-    blase("pv", `Hallo${me && me.vorname ? " " + esc(me.vorname) : ""}! Was möchtest du wissen?`);
+    blase("pv", `Hi${me && me.vorname ? " " + esc(me.vorname) : ""}, hier ist Donna. Frag mich etwas – oder gib mir einen Auftrag, z. B. „Buch mir einen Termin für Mario Müller morgen 12 Uhr“.`);
     chipsSetzen();
     setTimeout(() => inp.focus(), 350);
   }
   function schliessen() {
     if (!ebene) return;
+    aufgabe = null; // halbe Aufträge nicht stehen lassen
     const e = ebene;
     ebene = null;
     e.classList.remove("auf");
@@ -1148,7 +1488,7 @@
     setTimeout(() => e.remove(), 300);
   }
   addEventListener("hashchange", schliessen);
-  window.fragProvisio = { oeffnen, schliessen, beantworten, fragen };
+  window.fragProvisio = { oeffnen, schliessen, beantworten, fragen, antwort: (t) => (aufgabe && !istTerminAuftrag(" " + normal(t) + " ") ? aufgabeWeiter(t) : beantworten(t)), aufgabe: () => aufgabe };
 
   /* Einstieg: oben im Menü und auf „Heute“ */
   if (typeof renderMenu === "function") {
@@ -1160,7 +1500,7 @@
         const b = document.createElement("button");
         b.type = "button";
         b.className = "navlink fpnav";
-        b.innerHTML = `<span class="mic fpmic">💬</span>Frag Provisio`;
+        b.innerHTML = `<span class="mic fpmic">💬</span>Donna`;
         b.onclick = () => {
           if (typeof setMenu === "function") setMenu(false);
           setTimeout(oeffnen, 120);
@@ -1179,7 +1519,7 @@
         const b = document.createElement("button");
         b.type = "button";
         b.className = "fpheute";
-        b.innerHTML = `<span>💬</span> Frag Provisio …`;
+        b.innerHTML = `<span>💬</span> Frag Donna …`;
         b.onclick = oeffnen;
         box.prepend(b);
       }

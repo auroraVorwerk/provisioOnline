@@ -420,8 +420,8 @@
     },
     { ...hin("heute", "Zurück zu „Heute“", "Tippe unten in der Leiste auf „Heute“."), seit: "1.9" },
     {
-      titel: "Frag Provisio",
-      text: "Dein Assistent: Er beantwortet Fragen aus deinen Daten – offline, nichts wird verschickt. Tippe auf „Frag Provisio …“.",
+      titel: "Das ist Donna",
+      text: "Deine Assistentin: Sie beantwortet Fragen aus deinen Daten und trägt Termine für dich ein – offline, nichts wird verschickt. Tippe auf „Frag Donna …“.",
       ziel: () => finde(".fpheute"),
       nav: true,
       fertig: () => !!document.querySelector(".fragpv.auf"),
@@ -438,10 +438,18 @@
     },
     {
       titel: "Fenster schließen",
-      text: "Mit 🔊 liest er Antworten vor. Schließ den Assistenten mit dem Kreuz – du findest ihn hier auf „Heute“ und oben im Menü.",
+      text: "Mit 🔊 liest Donna Antworten vor. Schließ sie mit dem Kreuz – du findest sie hier auf „Heute“ und oben im Menü.",
       ziel: () => finde(".fragpv .fpzu"),
       fertig: () => !document.querySelector(".fragpv"),
       seit: "1.9",
+    },
+    {
+      ...info(
+        "Donna trägt Termine ein",
+        "Sag oder schreib Donna einfach: „Buch mir einen Termin für Mario Müller morgen 12 Uhr“. Fehlt etwas – Quelle, Adresse, Telefon – fragt sie nach, prüft Überschneidungen und trägt erst nach deinem „Ja“ ein.",
+        () => finde(".fpheute"),
+      ),
+      seit: "1.9.1",
     },
   ]);
 
@@ -879,7 +887,7 @@
   ]);
 
   /* ---------- Welche Schritte laufen: alles oder nur das Neue ---------- */
-  const STAND = "1.9"; // bei jedem Update mit neuen Funktionen anheben und Schritte mit seit: markieren
+  const STAND = "1.9.1"; // bei jedem Update mit neuen Funktionen anheben und Schritte mit seit: markieren
   const NEU_LISTE = [
     {
       ...info(

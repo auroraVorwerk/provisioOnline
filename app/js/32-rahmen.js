@@ -183,6 +183,11 @@ function setMenu(open) {
 }
 burger.onclick = () => setMenu(!drawer.classList.contains("open"));
 scrim.onclick = () => setMenu(false);
+/* Tipp auf die gerade offene Seite im Menü: kein hashchange – Menü trotzdem schließen */
+document.addEventListener("click", (ev) => {
+  const a = ev.target.closest && ev.target.closest("#drawer a.navlink");
+  if (a && a.getAttribute("href") === (location.hash || "#heute")) setMenu(false);
+});
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") setMenu(false);
 });

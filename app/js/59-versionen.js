@@ -7,6 +7,22 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.1.1",
+    datum: "November 2026",
+    kurz: "Donna trägt Termine für dich ein",
+    teile: [
+      [
+        "Neu",
+        [
+          "Der Assistent heißt jetzt Donna.",
+          "Donna nimmt Aufträge an: „Buch mir einen Termin für Mario Müller morgen 12 Uhr“. Was im Satz fehlt – Tag, Uhrzeit, Quelle, Adresse, Telefon, Notiz – fragt sie nacheinander nach. Adresse und Telefon kannst du mit „später“ überspringen.",
+          "Kennt Donna die Person schon (frühere Termine, Potenzial-, Empfehlungs- oder Interessentenliste), schlägt sie Adresse und Telefon zum Übernehmen vor.",
+          "Überschneidungen prüft sie selbst und nennt freie Zeiten. Eingetragen wird erst nach deinem „Ja“; „Abbrechen“ verwirft alles. Korrekturen gehen direkt: „nein, 13 Uhr“ oder „Telefon 0171 …“.",
+        ],
+      ],
+    ],
+  },
+  {
     v: "Online 1.1",
     datum: "November 2026",
     kurz: "Frag Provisio, Monatsansicht im Jahresrückblick",
