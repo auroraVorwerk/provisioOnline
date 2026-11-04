@@ -98,6 +98,7 @@
          ${esWahl("piMeine", "Meine Zahlen übernehmen", ziel !== "team")}
          ${tl ? esWahl("piTeamAn", "Teamumsatz übernehmen", true) : ""}
        </div>
+       ${detailVorschau(r.details)}
        <p class="hinweis bleibt">Beträge auf volle Euro abgerundet. Vorhandene Zahlen dieses Monats werden ersetzt.</p>`,
       () => {
         const [jahr, startW] = document.getElementById("piMonat").value.split("|").map(Number);
@@ -112,6 +113,8 @@
             fgAbger: v("piFg"),
             quelle: "pdf",
           };
+          /* Monatsdetails für die Ansicht im Jahresrückblick (Beträge mit Cent) */
+          if (r.details) nachtrag[jahr][startW].abr = { ...r.details, monat: r.monat, von: r.von, bis: r.bis };
         }
         const ta = document.getElementById("piTeamAn");
         if (ta && ta.checked) {
@@ -129,6 +132,20 @@
       },
       "Übernehmen",
     );
+  }
+  /* Kurze Vorschau der Monatsdetails im Prüfdialog */
+  const cent = (n) => (n === null || n === undefined ? "–" : n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €");
+  function detailVorschau(d) {
+    if (!d) return "";
+    const z = (t, w) => `<div class="pidz"><span>${t}</span><b>${w}</b></div>`;
+    return `<div class="h4">Für die Monatsansicht</div><div class="grp pidetails">
+      ${z("Online + Shop Umsatz", cent(d.onlineShop.umsatz))}
+      ${z("Provision daraus", cent(d.onlineShop.provision))}
+      ${z("Provision insgesamt", cent(d.einkommen))}
+      ${z("davon Festgebietsprämie", cent(d.fgPraemie))}
+      ${z("Umsatzsteuer", cent(d.mwst))}
+      ${z("Sonstige Einkünfte / Belastungen", cent(d.sonstige))}
+      ${z("Überweisung", cent(d.ueberweisung))}</div>`;
   }
   const esWahl = (id, t, an) =>
     `<label class="piwahl"><input type="checkbox" id="${id}"${an ? " checked" : ""}><span>${t}</span></label>`;

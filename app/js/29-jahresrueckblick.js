@@ -159,6 +159,7 @@ function renderJahr() {
       return (+alt[feld] || 0) + zahl;
     };
     nachtrag[jahr][startW] = {
+      ...(alt.abr ? { abr: alt.abr } : {}), // Monatsdetails aus der PDF bleiben erhalten
       modus,
       einheiten: wertVon("einheiten", w("ntEinheiten"), +w("ntEinheiten") || 0),
       umsatz: wertVon("umsatz", w("ntUmsatz"), num(w("ntUmsatz"))),

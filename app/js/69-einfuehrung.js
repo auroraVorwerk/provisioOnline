@@ -418,6 +418,31 @@
         return !hOffen() && (s.auf || geklickt("#hCalls")());
       },
     },
+    { ...hin("heute", "Zurück zu „Heute“", "Tippe unten in der Leiste auf „Heute“."), seit: "1.9" },
+    {
+      titel: "Frag Provisio",
+      text: "Dein Assistent: Er beantwortet Fragen aus deinen Daten – offline, nichts wird verschickt. Tippe auf „Frag Provisio …“.",
+      ziel: () => finde(".fpheute"),
+      nav: true,
+      fertig: () => !!document.querySelector(".fragpv.auf"),
+      seit: "1.9",
+    },
+    {
+      titel: "Frag etwas",
+      text: "Tippe auf ein Beispiel unten oder schreib selbst eine Frage – zum Beispiel „Was steht morgen an?“ oder „Mein VK7 zeigt Error 11“. Zum Sprechen nimmst du das Mikrofon der Tastatur.",
+      ziel: () => finde(".fragpv .fpchips") || finde(".fragpv .fpeingabe"),
+      frei: [".fragpv .fpchip", ".fragpv input", ".fragpv .fpeingabe button", ".fragpv .fplog"],
+      start: (s) => (s.n = document.querySelectorAll(".fragpv .fpb.pv").length),
+      fertig: (s) => document.querySelectorAll(".fragpv .fpb.pv").length > s.n,
+      seit: "1.9",
+    },
+    {
+      titel: "Fenster schließen",
+      text: "Mit 🔊 liest er Antworten vor. Schließ den Assistenten mit dem Kreuz – du findest ihn hier auf „Heute“ und oben im Menü.",
+      ziel: () => finde(".fragpv .fpzu"),
+      fertig: () => !document.querySelector(".fragpv"),
+      seit: "1.9",
+    },
   ]);
 
   const verkauf = (nr, titel, text, kind) => ({
@@ -541,6 +566,15 @@
         () => finde("#pdfJahr"),
       ),
       seit: "1.8",
+    },
+    { ...hin("jahr", "Jahresrückblick"), seit: "1.9" },
+    {
+      ...info(
+        "Monat antippen",
+        "Jeder Vertriebsmonat lässt sich antippen. Mit übernommener PDF siehst du dort Online- und Shop-Verkäufe mit Provision, Provision insgesamt, Festgebietsprämie, Umsatzsteuer, Ausgaben und deine Überweisung. Monate mit Abrechnung haben einen grünen Punkt.",
+        () => finde(".atable tbody tr.maklick"),
+      ),
+      seit: "1.9",
     },
   ]);
 
@@ -845,7 +879,7 @@
   ]);
 
   /* ---------- Welche Schritte laufen: alles oder nur das Neue ---------- */
-  const STAND = "1.8.2"; // bei jedem Update mit neuen Funktionen anheben und Schritte mit seit: markieren
+  const STAND = "1.9"; // bei jedem Update mit neuen Funktionen anheben und Schritte mit seit: markieren
   const NEU_LISTE = [
     {
       ...info(
@@ -1323,8 +1357,14 @@
   /* Erst starten, wenn kein anderes Fenster (z. B. Wiederherstellungs-Code) offen ist */
   function warteAufRuhe(fn) {
     const login = document.getElementById("login");
+    if (!me) return; // abgemeldet – beim nächsten Anmelden wird neu geprüft
     if (fensterOffen() || (login && !login.hidden)) return setTimeout(() => warteAufRuhe(fn), 600);
-    setTimeout(fn, 400);
+    setTimeout(() => {
+      /* in der Zwischenzeit abgemeldet? Dann nicht starten */
+      if (!me || (login && !login.hidden)) return;
+      if (fensterOffen()) return warteAufRuhe(fn);
+      fn();
+    }, 400);
   }
   if (typeof window.starteSitzung === "function") {
     const sitzungOhneEinfuehrung = window.starteSitzung;

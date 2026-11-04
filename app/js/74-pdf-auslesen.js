@@ -119,6 +119,97 @@
     };
   }
 
+  /*
+   * ---------- Monatsdetails (Beta 1.9) ----------
+   * Die Seiten liegen nicht in fester Reihenfolge – jede Angabe wird über ihre
+   * Beschriftung gesucht, auf allen Seiten:
+   *  · Zusammenfassung: „Festgebietsprämie“ (Prämien), „Summe Einkommen“,
+   *    „MwSt. aus Abrechnungszeitraum“, „Sonstige Einkünfte / Belastungen /
+   *    Saldovortrag“, „Überweisung Bankkonto / Saldo“ – jeweils der erste
+   *    Betrag rechts der Beschriftung (Spalte „Monat“).
+   *  · Anlage 1 (Kundenaufträge): Zeilen mit Buchungsereignis „AE Int/…“
+   *    (online) und „AE Ser/…“ (Shop) → Spalten „FESTGEBIET Wertung
+   *    Umsatz(EUR)“ und „KONTAKT 5 % Provi(EUR)“; dazu der Satz der
+   *    Festgebietsprämie aus „Festgebietsprämie 4% von …“.
+   * Beträge mit nachgestelltem Minus („3.080,21-“) sind negativ.
+   */
+  const BETRAG = /^-?[\d.]+,\d{2}-?$/;
+  const betrag = (t) => {
+    const s = String(t || "").trim();
+    const neg = /-$/.test(s) || /^-/.test(s);
+    const n = zahl(s.replace(/-/g, ""));
+    return Math.round((neg ? -n : n) * 100) / 100;
+  };
+  const cent = (n) => Math.round(n * 100) / 100;
+  function detailsAuswerten(seiten) {
+    const d = {
+      onlineShop: { umsatz: 0, kontakt: 0, posten: 0 },
+      fgSatz: null,
+      einkommen: null,
+      fgPraemie: null,
+      mwst: null,
+      sonstige: null,
+      ueberweisung: null,
+    };
+    const LABEL = [
+      ["einkommen", /^Summe Einkommen$/],
+      ["mwst", /^MwSt\. aus Abrechnungszeitraum/],
+      ["sonstige", /^Sonstige Einkünfte/],
+      ["ueberweisung", /^Überweisung Bankkonto/],
+      ["fgPraemie", /^Festgebietsprämie$/],
+    ];
+    for (const items of seiten) {
+      const z = zeilen(items);
+      for (const r of z) {
+        const lab = r.t[0].t;
+        LABEL.forEach(([feld, re]) => {
+          if (d[feld] !== null || !re.test(lab)) return;
+          const w = r.t.slice(1).find((s) => BETRAG.test(s.t));
+          if (w) d[feld] = betrag(w.t);
+        });
+        if (d.fgSatz === null) {
+          const m = /Festgebietsprämie\s+(\d+(?:,\d+)?)\s*%/.exec(r.t.map((s) => s.t).join(" "));
+          if (m) d.fgSatz = zahl(m[1]);
+        }
+      }
+      /* Tabelle der Anlage 1 */
+      const kopf = z.find((r) => r.t.some((s) => /^Buchungsereignis$/.test(s.t)) && r.t.some((s) => /Provi\(EUR\)/.test(s.t)));
+      if (!kopf) continue;
+      const mitte = (s) => (s.x + s.x2) / 2;
+      const ev = kopf.t.find((s) => /^Buchungsereignis$/.test(s.t));
+      const fg = kopf.t.find((s) => /^Umsatz\(EUR\)$/.test(s.t));
+      /* „KONTAKT“ steht eine Kopfzeile höher; die Provi-Spalte darunter ist die richtige */
+      const ober = z.filter((r) => r.y > kopf.y && r.y - kopf.y < 40);
+      const kontaktKopf = ober.map((r) => r.t.find((s) => /^KONTAKT$/i.test(s.t))).find(Boolean);
+      const provis = kopf.t.filter((s) => /Provi\(EUR\)/.test(s.t));
+      const kontakt = kontaktKopf
+        ? provis.reduce((a, b) => (Math.abs(mitte(b) - mitte(kontaktKopf)) < Math.abs(mitte(a) - mitte(kontaktKopf)) ? b : a))
+        : provis[0];
+      if (!ev || !fg || !kontakt) continue;
+      const spalten = kopf.t.map((s) => ({ s, m: mitte(s) }));
+      const spalteVon = (s) => spalten.reduce((a, b) => (Math.abs(b.m - mitte(s)) < Math.abs(a.m - mitte(s)) ? b : a)).s;
+      z.filter((r) => r.y < kopf.y).forEach((r) => {
+        const e = r.t.find((s) => s.x >= ev.x - 12 && s.x <= ev.x2 + 12 && /^\*?AE\s+(Int|Ser)\b/i.test(s.t));
+        if (!e) return;
+        d.onlineShop.posten++;
+        r.t.forEach((s) => {
+          if (!BETRAG.test(s.t) || s.x < ev.x2) return;
+          const k = spalteVon(s);
+          if (k === fg) d.onlineShop.umsatz += betrag(s.t);
+          else if (k === kontakt) d.onlineShop.kontakt += betrag(s.t);
+        });
+      });
+    }
+    const os = d.onlineShop;
+    os.umsatz = cent(os.umsatz);
+    os.kontakt = cent(os.kontakt);
+    /* Festgebietsprämie auf den Festgebiets-Umsatz dieser Aufträge – so rechnet auch die Abrechnung */
+    os.praemie = d.fgSatz !== null ? cent((os.umsatz * d.fgSatz) / 100) : 0;
+    os.provision = cent(os.kontakt + os.praemie);
+    os.anteil = d.einkommen ? Math.round((os.provision / d.einkommen) * 1000) / 10 : null;
+    return d;
+  }
+
   /* Berufseinsteiger: höchstens 52 Wochen dabei am letzten Tag der Abrechnung */
   function istEinsteiger(eintritt, bis) {
     if (!eintritt || !bis) return false;
@@ -163,19 +254,25 @@
     const daten = new Uint8Array(await datei.arrayBuffer());
     const aufgabe = pdfjsLib.getDocument({ data: daten, isEvalSupported: false, disableFontFace: true, verbosity: 0 });
     const doc = await aufgabe.promise;
+    const alle = [];
+    let treffer = null;
     try {
       for (let p = 1; p <= doc.numPages; p++) {
         const seite = await doc.getPage(p);
         const tc = await seite.getTextContent();
-        const s = seiteAuswerten(tc.items);
-        if (s && s.reihen.length) return { seite: p, ...abrechnungAuswerten(s, dk) };
+        alle.push(tc.items);
+        if (!treffer) {
+          const s = seiteAuswerten(tc.items);
+          if (s && s.reihen.length) treffer = { seite: p, ...abrechnungAuswerten(s, dk) };
+        }
       }
     } finally {
       aufgabe.destroy();
     }
+    if (treffer) return { ...treffer, details: detailsAuswerten(alle) };
     throw new Error("In dieser PDF wurde keine Leistungsübersicht mit „Partner-Nr“ gefunden.");
   }
 
-  global.abrechnungsLeser = { seiteAuswerten, abrechnungAuswerten, istEinsteiger, abrunden, pdfAuslesen };
+  global.abrechnungsLeser = { seiteAuswerten, abrechnungAuswerten, detailsAuswerten, istEinsteiger, abrunden, pdfAuslesen };
   if (typeof module !== "undefined") module.exports = global.abrechnungsLeser;
 })(typeof window !== "undefined" ? window : globalThis);

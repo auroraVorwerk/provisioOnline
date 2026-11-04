@@ -7,6 +7,24 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.1",
+    datum: "November 2026",
+    kurz: "Frag Provisio, Monatsansicht im Jahresrückblick",
+    teile: [
+      [
+        "Neu",
+        [
+          "Frag Provisio: dein Assistent auf „Heute“ und oben im Menü. Er beantwortet Fragen aus deinen eigenen Daten – Termine, freie Zeit, Umsatz, Provision, Überweisung, Ziele, Kunden, Team, K70, Kilometer und wo es bei FGB, Promo oder Kundenterminen hakt. Er versteht auch anders formulierte Fragen und Folgefragen wie „und letzte Woche?“. Keine echte KI: alles läuft auf dem Gerät, nichts wird verschickt.",
+          "Kobold-Wissen im Assistenten (Reparaturhandbuch Deutschland, Stand 11/2026): Fehlercodes für VK7, VR7 und VR300, LED-Anzeigen und Störungen aller Geräte und Aufsätze, Reparaturpauschalen, welche Modelle noch repariert werden, Garantie, Ablauf und Kontakt des Reparaturservices sowie Roboter-Updates Schritt für Schritt.",
+          "Antworten vorlesen lassen (🔊). Zum Sprechen nutzt du das Mikrofon der iPhone-Tastatur.",
+          "Jahresrückblick: Jeden Vertriebsmonat antippen. Mit übernommener PDF siehst du Umsatz, Festgebietsumsatz, Einheiten, Aufträge, Online- und Shop-Umsatz mit der Provision daraus (Kontakt 5 % plus Festgebietsprämie) und ihrem Anteil an deiner Provision, Provision insgesamt, Festgebietsprämie, Umsatzsteuer, Ausgaben und Verrechnungen sowie die Überweisung.",
+          "PDF-Import liest dafür die Zusammenfassung und die Kundenaufträge aus – egal, in welcher Reihenfolge die Seiten liegen.",
+          "Einführung um den Assistenten und die Monatsansicht ergänzt.",
+        ],
+      ],
+    ],
+  },
+  {
     v: "Online 1.0.1",
     datum: "November 2026",
     kurz: "Sicherheit vor dem Pentest",
