@@ -250,7 +250,7 @@
   /* Ganze PDF lesen (pdf.js); gibt die Seite mit der Tabelle ausgewertet zurück */
   async function pdfAuslesen(datei, dk) {
     if (!global.pdfjsLib) throw new Error("Der PDF-Leser ist nicht geladen.");
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("vendor/pdf.worker.min.mjs", document.baseURI).href;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("vendor/pdf.worker.start.mjs", document.baseURI).href;
     const daten = new Uint8Array(await datei.arrayBuffer());
     const aufgabe = pdfjsLib.getDocument({ data: daten, isEvalSupported: false, disableFontFace: true, verbosity: 0 });
     const doc = await aufgabe.promise;

@@ -177,6 +177,118 @@
     return r.getChannelData(0);
   }
 
+  /*
+   * ---------- Fachbegriffe aus gesprochener Sprache ----------
+   * Whisper schreibt Modellnamen oft so, wie sie klingen: „fau kar 140“,
+   * „Vau Ka hundertvierzig“, „E B sieben“, „VK 140“. Hier wird daraus wieder
+   * VK140, EB7, VR300, K70, VG100+ usw. Auch Zahlwörter werden zu Ziffern.
+   */
+  const BUCHSTABE = {
+    a: "A", ah: "A", be: "B", beh: "B", ce: "C", ze: "C", zeh: "C", de: "D", deh: "D", e: "E", eh: "E", ee: "E",
+    ef: "F", eff: "F", ge: "G", geh: "G", ha: "H", hah: "H", i: "I", ih: "I", jot: "J", ka: "K", kah: "K", kar: "K",
+    kaa: "K", ca: "K", el: "L", ell: "L", em: "M", emm: "M", en: "N", enn: "N", o: "O", oh: "O", pe: "P", peh: "P",
+    ku: "Q", kuh: "Q", er: "R", err: "R", es: "S", ess: "S", te: "T", teh: "T", tee: "T", u: "U", uh: "U",
+    vau: "V", fau: "V", vauh: "V", fauh: "V", wau: "V", we: "W", weh: "W", ix: "X", ypsilon: "Y", zett: "Z", zet: "Z",
+  };
+  const MODELLE = /^(VK|VB|VR|VT|EB|EBB|SP|SPB|PB|PBB|VG|VC|VM|RB|MR|MP|FK|HD|AC|SC|CA|FD|VF|K|PCI)$/;
+  const EINER = { null: 0, ein: 1, eins: 1, eine: 1, einen: 1, zwei: 2, zwo: 2, drei: 3, vier: 4, fuenf: 5, fünf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9 };
+  const ZEHNER = { zwanzig: 20, dreissig: 30, dreißig: 30, vierzig: 40, fuenfzig: 50, fünfzig: 50, sechzig: 60, siebzig: 70, achtzig: 80, neunzig: 90 };
+  const TEEN = { zehn: 10, elf: 11, zwoelf: 12, zwölf: 12, dreizehn: 13, vierzehn: 14, fuenfzehn: 15, fünfzehn: 15, sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19 };
+  /* „hundertvierzig“, „dreihundert“, „einhundertzwanzig“, „siebenundvierzig“ → Zahl (bis 9999) */
+  function zahlwort(w) {
+    w = w.toLowerCase();
+    if (!/^[a-zäöüß]+$/.test(w)) return null;
+    let rest = w,
+      n = 0;
+    const tausend = /^(.*?)tausend(.*)$/.exec(rest);
+    if (tausend) {
+      const v = tausend[1] ? klein(tausend[1]) : 1;
+      if (v === null) return null;
+      n += v * 1000;
+      rest = tausend[2];
+    }
+    const hundert = /^(.*?)hundert(.*)$/.exec(rest);
+    if (hundert) {
+      const v = hundert[1] ? klein(hundert[1]) : 1;
+      if (v === null) return null;
+      n += v * 100;
+      rest = hundert[2];
+    }
+    if (rest) {
+      const v = klein(rest.replace(/^und/, ""));
+      if (v === null) return null;
+      n += v;
+    }
+    return tausend || hundert || rest ? n : null;
+  }
+  function klein(w) {
+    if (w in EINER) return EINER[w];
+    if (w in TEEN) return TEEN[w];
+    if (w in ZEHNER) return ZEHNER[w];
+    const m = /^(.+?)und(.+)$/.exec(w);
+    if (m && m[1] in EINER && m[2] in ZEHNER) return EINER[m[1]] + ZEHNER[m[2]];
+    return null;
+  }
+  function fachbegriffe(text) {
+    let t = " " + String(text || "").replace(/[„“"]/g, " ") + " ";
+    /* Zahlwörter → Ziffern (nicht „ein Termin“, „eine Notiz“) */
+    t = t.replace(/(?<=[\s,.(])([A-Za-zÄÖÜäöüß]+)(?=[\s,.!?)])/g, (w) => {
+      if (/^(ein|eine|einen|einem|einer|eins)$/i.test(w)) return w;
+      const n = zahlwort(w);
+      return n === null ? w : String(n);
+    });
+    /* Buchstaben-Folgen („fau kar“, „E B“, „V-K“) vor einer Zahl zu einem Modellnamen */
+    const tok = t.split(/(\s+)/);
+    const raus = [];
+    for (let i = 0; i < tok.length; i++) {
+      const roh = tok[i];
+      if (/^\s+$/.test(roh) || !roh) {
+        raus.push(roh);
+        continue;
+      }
+      /* Folge von Buchstaben-Wörtern einsammeln */
+      let j = i,
+        buchst = "";
+      const teile = [];
+      while (j < tok.length) {
+        const w = tok[j];
+        if (/^\s+$/.test(w)) {
+          j++;
+          continue;
+        }
+        const k = w.replace(/[.,-]/g, "").toLowerCase();
+        const b = BUCHSTABE[k] || (/^[a-z]$/.test(k) ? k.toUpperCase() : null) || (/^[a-z]{1,3}$/i.test(w.replace(/[.-]/g, "")) && MODELLE.test(w.replace(/[.-]/g, "").toUpperCase()) ? w.replace(/[.-]/g, "").toUpperCase() : null);
+        if (!b) break;
+        buchst += b;
+        teile.push(j);
+        j++;
+      }
+      let k = j;
+      while (k < tok.length && /^\s+$/.test(tok[k])) k++;
+      const zahl = k < tok.length ? /^(\d{1,4})(\+?)([.,!?]?)$/.exec(tok[k]) : null;
+      if (buchst && zahl && MODELLE.test(buchst) && (teile.length > 1 || buchst.length > 1 || buchst === "K")) {
+        let plus = zahl[2];
+        let ende = k;
+        let m = k + 1;
+        while (m < tok.length && /^\s+$/.test(tok[m])) m++;
+        if (!plus && m < tok.length && /^plus[.,!?]?$/i.test(tok[m])) {
+          plus = "+";
+          ende = m;
+        }
+        raus.push(buchst + zahl[1] + plus + zahl[3]);
+        i = ende;
+        continue;
+      }
+      raus.push(roh);
+    }
+    t = raus.join("");
+    /* „VK 140“, „Vk140“, „v k 140“ → VK140 */
+    t = t.replace(/\b(vk|vb|vr|vt|ebb|eb|spb|sp|pbb|pb|vg|vc|vm|rb|mr|mp|fk|hd|k)[\s-]?(\d{1,3})(\s?plus|\+)?\b/gi, (_, a, b, c) => a.toUpperCase() + b + (c ? "+" : ""));
+    /* Fehlercodes: „Error elf“ ist oben schon zur Ziffer geworden; „Fehler Nummer 14“ bleibt verständlich */
+    return t.replace(/\s+/g, " ").trim();
+  }
+  window.donnaFachbegriffe = fachbegriffe;
+
   /* ---------- Sprechen ---------- */
   let stimme = null;
   function stimmeWaehlen() {
@@ -371,7 +483,7 @@
     let text = "";
     try {
       const r = await erkenner(samples, { language: "german", task: "transcribe", chunk_length_s: 30 });
-      text = String((r && r.text) || "").replace(/\s+/g, " ").trim();
+      text = fachbegriffe(String((r && r.text) || "").replace(/\s+/g, " ").trim());
     } catch (e) {
       gespraechBeenden();
       return fehlerZeigen("Ich konnte das nicht umwandeln: " + (e.message || e));

@@ -7,6 +7,26 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.2.1",
+    datum: "5. November 2026",
+    kurz: "PDF-Abrechnung auf dem iPhone wieder lesbar, Donna versteht Modellnamen",
+    teile: [
+      [
+        "Behoben",
+        [
+          "„Aus Abrechnung (PDF) übernehmen“ zeigte auf dem iPhone und iPad „PDF nicht lesbar“. Der PDF-Leser nutzte eine Funktion, die Safari noch nicht kennt – sie wird jetzt nachgerüstet.",
+        ],
+      ],
+      [
+        "Verbessert",
+        [
+          "Donna versteht gesprochene Modellnamen: „fau kar hundertvierzig“ wird VK140, „vau er dreihundert“ VR300, „E B sieben“ EB7, „vau ge hundert plus“ VG100+, „Ka siebzig“ K70.",
+          "Gesprochene Zahlen werden zu Ziffern, etwa „zwölf Uhr“ zu 12 Uhr oder ein Fehlercode.",
+        ],
+      ],
+    ],
+  },
+  {
     v: "Online 1.2",
     datum: "November 2026",
     kurz: "Mit Donna sprechen, schwebende Knöpfe, schönere Statistik-PDF",

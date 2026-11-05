@@ -13,7 +13,8 @@
     if (window.pdfjsLib) return Promise.resolve();
     if (leserLaedt) return leserLaedt;
     /* pdf.js 6.4 (Legacy-Build) als Modul – nur aus der eigenen App (CSP 'self') */
-    leserLaedt = import(new URL("vendor/pdf.min.mjs", document.baseURI).href)
+    leserLaedt = import(new URL("vendor/stream-iterator.mjs", document.baseURI).href)
+      .then(() => import(new URL("vendor/pdf.min.mjs", document.baseURI).href))
       .then((m) => {
         window.pdfjsLib = m;
       })
