@@ -1,0 +1,213 @@
+/*
+ * Statistik als PDF / Druck (Beta 1.10)
+ * Ganze Blattbreite, größere Schrift, weniger Kanten: keine dicken blauen
+ * Trennbalken mehr, Gruppen nur durch Luft getrennt, farbige Spaltenköpfe
+ * mit Abstand, Häkchen und Summen in der Farbe ihrer Spalte, heller Text.
+ */
+@media print {
+  html body.drucke-stat .dsinner,
+  html body.drucke-stat .dsflaeche {
+    width: 100% !important;
+  }
+  html body.drucke-stat .dsblatt table.stat {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    table-layout: auto !important;
+    font-size: calc(15 * var(--u)) !important;
+    background: transparent !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th,
+  html body.drucke-stat .dsblatt table.stat td {
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: calc(8 * var(--u)) calc(6 * var(--u)) !important;
+    color: #eef3f8 !important;
+    background: transparent !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  /* Zeilen: dezente Streifen statt Gitter */
+  html body.drucke-stat .dsblatt table.stat tbody tr.z0 td,
+  html body.drucke-stat .dsblatt table.stat tbody tr.z1 td {
+    background: #0f1c2d !important;
+    border-bottom: calc(1 * var(--u)) solid #1b2b42 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tbody tr.z1 td {
+    background: #122236 !important;
+  }
+  /* Gruppenanfang: Luft statt Balken */
+  html body.drucke-stat .dsblatt table.stat .gstart {
+    border-left: calc(14 * var(--u)) solid #08121f !important;
+  }
+  /* Gruppentitel */
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th {
+    background: transparent !important;
+    color: #9fb2c8 !important;
+    font-size: calc(11 * var(--u)) !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: calc(4 * var(--u)) calc(4 * var(--u)) calc(8 * var(--u)) !important;
+    border-bottom: 0 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th.gstart {
+    border-left-color: #08121f !important;
+  }
+  /* Farbige Spaltenköpfe mit Abstand dazwischen */
+  html body.drucke-stat .dsblatt table.stat th.vh {
+    height: calc(150 * var(--u)) !important;
+    padding: calc(10 * var(--u)) 0 !important;
+    font-size: calc(12.5 * var(--u)) !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    background-clip: padding-box !important;
+    border-left: calc(3 * var(--u)) solid transparent !important;
+    border-right: calc(3 * var(--u)) solid transparent !important;
+    border-radius: calc(12 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th.vh[style] {
+    background: color-mix(in srgb, var(--vhc, #3b9bf0) 80%, #0f1c2d) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th.vh.gstart {
+    border-left: calc(14 * var(--u)) solid #08121f !important;
+  }
+  /* Textköpfe: kurz, nicht fett-riesig, nicht überlaufend */
+  html body.drucke-stat .dsblatt table.stat th.col-time,
+  html body.drucke-stat .dsblatt table.stat th.col-name,
+  html body.drucke-stat .dsblatt table.stat th.col-alt,
+  html body.drucke-stat .dsblatt table.stat th.col-num {
+    background: transparent !important;
+    color: #c9d6e4 !important;
+    font-size: calc(13 * var(--u)) !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+    vertical-align: bottom !important;
+    padding-bottom: calc(10 * var(--u)) !important;
+    border-bottom: calc(2 * var(--u)) solid #2a3e5a !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th.col-name,
+  html body.drucke-stat .dsblatt table.stat td.name {
+    text-align: left !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th.col-num,
+  html body.drucke-stat .dsblatt table.stat td.num {
+    text-align: right !important;
+    padding-right: calc(12 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.name {
+    font-weight: 700 !important;
+    font-size: calc(15 * var(--u)) !important;
+    white-space: nowrap;
+  }
+  html body.drucke-stat .dsblatt table.stat td.name small {
+    display: block;
+    font-weight: 500 !important;
+    font-size: calc(12.5 * var(--u)) !important;
+    color: #b4c3d4 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.num {
+    font-weight: 700 !important;
+    font-variant-numeric: tabular-nums;
+  }
+  html body.drucke-stat .dsblatt table.stat td.alt {
+    font-size: calc(13.5 * var(--u)) !important;
+    color: #eef3f8 !important;
+  }
+  /* Häkchen: farbiges Feld in der Farbe der Spalte, gut lesbar */
+  html body.drucke-stat .dsblatt table.stat td.tick {
+    font-size: calc(16 * var(--u)) !important;
+    font-weight: 800 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.tick[style] {
+    background: color-mix(in srgb, var(--tc, #3b9bf0) 70%, #0f1c2d) !important;
+    background-clip: padding-box !important;
+    border-left: calc(3 * var(--u)) solid transparent !important;
+    border-right: calc(3 * var(--u)) solid transparent !important;
+    border-radius: calc(8 * var(--u)) !important;
+    color: #ffffff !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.tick.gstart[style] {
+    border-left: calc(14 * var(--u)) solid #08121f !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.tick.nein[style] {
+    background: transparent !important;
+    color: #7f8fa4 !important;
+  }
+  /* Tageszeile */
+  html body.drucke-stat .dsblatt table.stat tr.dayrow td {
+    background: transparent !important;
+    text-align: left !important;
+    padding: calc(16 * var(--u)) 0 calc(6 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.dayrow span {
+    background: #3b9bf0 !important;
+    color: #ffffff !important;
+    border-radius: 999px !important;
+    padding: calc(6 * var(--u)) calc(16 * var(--u)) !important;
+    font-size: calc(13 * var(--u)) !important;
+    font-weight: 700;
+  }
+  /* Summenzeile: Zahlen auf der Farbe ihrer Spalte */
+  html body.drucke-stat .dsblatt table.stat tr.sum td {
+    background: #0b1726 !important;
+    border-top: calc(2 * var(--u)) solid #2a3e5a !important;
+    font-weight: 800 !important;
+    font-size: calc(15 * var(--u)) !important;
+    padding-top: calc(10 * var(--u)) !important;
+    padding-bottom: calc(10 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme {
+    background: color-mix(in srgb, var(--tc, #3b9bf0) 45%, #0b1726) !important;
+    background-clip: padding-box !important;
+    border-left: calc(3 * var(--u)) solid transparent !important;
+    border-right: calc(3 * var(--u)) solid transparent !important;
+    border-radius: calc(8 * var(--u)) !important;
+    color: #ffffff !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme.null {
+    background: transparent !important;
+    color: #6f8197 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.sum td.gstart {
+    border-left: calc(14 * var(--u)) solid #08121f !important;
+  }
+  html body.drucke-stat .dskopf {
+    color: #ffffff !important;
+    font-size: calc(22 * var(--u)) !important;
+  }
+  html body.drucke-stat .dskopf small {
+    color: #9fb2c8 !important;
+    font-size: calc(14 * var(--u)) !important;
+  }
+}
+@media print {
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th.empty,
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th:empty {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th.empty::before,
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th:empty::before {
+    display: none !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th.vh {
+    border-left-width: calc(4 * var(--u)) !important;
+    border-right-width: calc(4 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme,
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme.null {
+    border-top: 0 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme.null {
+    border-radius: 0 !important;
+  }
+}
+@media print {
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th.sticky,
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th.sticky::after,
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th.sticky::before {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}

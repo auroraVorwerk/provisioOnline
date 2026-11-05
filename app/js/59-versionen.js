@@ -7,6 +7,56 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.2",
+    datum: "November 2026",
+    kurz: "Mit Donna sprechen, schwebende Knöpfe, schönere Statistik-PDF",
+    teile: [
+      [
+        "Neu",
+        [
+          "Mit Donna sprechen wie mit Siri: Donna sitzt unten rechts auf „Heute“. Antippen, sprechen – Donna antwortet laut und hört danach wieder zu. „Danke Donna“ oder eine Weile Stille beendet das Gespräch.",
+          "Die Sprache wird auf dem iPhone selbst erkannt (Sprachmodell Whisper). Beim ersten Mal lädt Donna es einmalig (etwa 110 MB, am besten im WLAN), danach geht es auch offline.",
+          "Gesprochene Namen gleicht Donna mit deinen Kunden ab, damit „Mille“ wieder „Müller“ wird.",
+          "Das Plus im Planer schwebt jetzt über der Leiste – genau wie Donna auf „Heute“. Auf dem iPhone Duo sitzen beide rechts über der senkrechten Leiste.",
+          "Donnas Vorschläge sind lila und besser lesbar.",
+        ],
+      ],
+      [
+        "Verbessert",
+        [
+          "Statistik als PDF: nutzt die ganze Blattbreite, größere Schrift, kurze Überschriften, keine dicken Trennbalken mehr, Abstand zwischen den farbigen Spaltenköpfen, Häkchen und Summen in der Farbe ihrer Spalte.",
+        ],
+      ],
+      ["Sicherheit", ["Mikrofon und Spracherkennung – siehe Security 2.2."]],
+    ],
+  },
+  {
+    v: "Security 2.2",
+    datum: "5. November 2026",
+    ab: "Online 1.2",
+    kurz: "Spracherkennung auf dem Gerät (Donna)",
+    teile: [
+      ["Geltungsbereich", ["Gilt für den Sprachmodus der Assistentin Donna: Mikrofonzugriff, Umwandlung von Sprache in Text und Sprachausgabe."]],
+      [
+        "Maßnahmen",
+        [
+          "Die Spracherkennung läuft vollständig auf dem Gerät. Weder Audio noch erkannter Text werden übertragen – auch nicht an Apple, OpenAI oder andere Dritte.",
+          "Das Sprachmodell (Whisper „base“, OpenAI, MIT-Lizenz) und die Laufzeit (ONNX Runtime Web, MIT-Lizenz; transformers.js, Apache-2.0) werden ausschließlich von der eigenen App-Adresse geladen und im Browser-Speicher der App abgelegt. Externe Server oder CDNs werden nicht verwendet.",
+          "Mikrofonzugriff nur nach Antippen des Mikrofons und nach Freigabe durch das Betriebssystem. Die Aufnahme liegt nur im Arbeitsspeicher und wird nach der Umwandlung verworfen; es wird nichts gespeichert.",
+          "Die Sprachausgabe nutzt die Stimmen des Geräts.",
+        ],
+      ],
+      [
+        "Technische Umsetzung",
+        [
+          "Content-Security-Policy: script-src um 'wasm-unsafe-eval' erweitert – das erlaubt ausschließlich das Übersetzen von WebAssembly-Code aus der eigenen Quelle, nicht das Ausführen von JavaScript aus Zeichenketten (kein 'unsafe-eval'). Alle übrigen Regeln bleiben unverändert.",
+          "Das Modell ist quantisiert (int8, rund 80 MB), die Laufzeit läuft einfädig ohne SharedArrayBuffer.",
+        ],
+      ],
+      ["Hinweise", ["Das Mikrofon kann jederzeit in den iOS-Einstellungen entzogen werden. Ohne Sprachmodus funktioniert Donna weiter per Text."]],
+    ],
+  },
+  {
     v: "Online 1.1.1",
     datum: "November 2026",
     kurz: "Donna trägt Termine für dich ein",

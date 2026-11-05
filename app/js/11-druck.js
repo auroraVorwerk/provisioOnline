@@ -61,7 +61,70 @@ function statTabelleFremd(blob, mo) {
   }
   return html.replace(/<button[^>]*class="pdfbtn"[\s\S]*?<\/button>/, "");
 }
+/*
+ * Druckfassung der Statistik (Beta 1.10): ohne die dicken Trennspalten, mit
+ * kurzen Überschriften, Abstand zwischen den Gruppen und farbigen Summen –
+ * damit das Blatt die ganze Breite nutzt und alles lesbar ist.
+ */
+const DRUCK_KURZ = {
+  Uhrzeit: "Zeit",
+  "Kunde und Anschrift": "Kunde",
+  "Anzahl Einheiten": "Einheiten",
+  "Brutto Einheiten": "Umsatz €",
+  "Brutto K70": "K70 €",
+  "Einheiten und Umsätze": "Zahlen",
+};
+function druckTabelleAufbereiten(html) {
+  const t = document.createElement("table");
+  t.innerHTML = html;
+  /* Trennspalten raus, der Gruppenanfang bekommt stattdessen Luft */
+  t.querySelectorAll("tr").forEach((tr) => {
+    let neu = false;
+    [...tr.children].forEach((c) => {
+      if (c.classList.contains("vsep")) {
+        c.remove();
+        neu = true;
+        return;
+      }
+      if (neu) c.classList.add("gstart");
+      neu = false;
+    });
+  });
+  const spalten = t.querySelector("thead tr:not(.grp)") || t.querySelectorAll("thead tr")[1];
+  const anzahl = spalten ? [...spalten.children].reduce((n, c) => n + (c.colSpan || 1), 0) : 0;
+  t.querySelectorAll("td[colspan]").forEach((td) => {
+    if (td.colSpan > anzahl && anzahl) td.colSpan = anzahl;
+  });
+  /* kurze, eindeutige Überschriften */
+  t.querySelectorAll("thead th").forEach((th) => {
+    const k = DRUCK_KURZ[th.textContent.trim()];
+    if (k) th.textContent = k;
+  });
+  /* Summenzeile: Zahlen in der Farbe ihrer Spalte */
+  if (spalten) {
+    const farben = [];
+    [...spalten.children].forEach((th) => {
+      const st = th.getAttribute("style") || "";
+      const m = /--vhc:\s*([^;]+)/.exec(st) || /background(?:-color)?:\s*([^;]+)/.exec(st);
+      for (let i = 0; i < (th.colSpan || 1); i++) farben.push(m ? m[1].trim() : null);
+    });
+    const summe = t.querySelector("tr.sum") || [...t.querySelectorAll("tbody tr")].pop();
+    if (summe) {
+      let i = 0;
+      [...summe.children].forEach((td) => {
+        const f = farben[i];
+        i += td.colSpan || 1;
+        if (!f || td.classList.contains("tick")) return;
+        td.classList.add("dssumme");
+        if (/^[–\-]?$/.test(td.textContent.trim())) td.classList.add("null");
+        td.style.setProperty("--tc", f);
+      });
+    }
+  }
+  return t.innerHTML;
+}
 function druckBlattBauen(tabelle, mo, wer) {
+  tabelle = druckTabelleAufbereiten(tabelle);
   const start = mondayOf(new Date(mo));
   const ende = new Date(start);
   ende.setDate(ende.getDate() + 6);

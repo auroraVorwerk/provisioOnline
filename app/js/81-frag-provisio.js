@@ -1098,6 +1098,7 @@
     return Object.keys(a).length ? a : null;
   }
   function nameAus(roh) {
+    roh = String(roh).replace(/[,;]/g, " ");
     const m = /\b(?:für|fuer|mit|bei)\s+((?:herrn?|frau|familie)\s+)?([A-ZÄÖÜa-zäöüß][\wäöüßÄÖÜ.\-]*(?:\s+[A-ZÄÖÜa-zäöüß][\wäöüßÄÖÜ.\-]*){0,2})/i.exec(roh);
     if (!m) return null;
     const STOP = /^(morgen|uebermorgen|übermorgen|heute|am|um|ab|gegen|nächste|naechste|diese|kommende|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|in|im|kw|einen|ein|den|termin|\d.*)$/i;
@@ -1145,11 +1146,29 @@
     return null;
   }
 
+  /* Gesprochene Namen kommen oft leicht falsch an („Mille“ statt „Müller“):
+     ähnlich klingende bekannte Namen werden in ihrer richtigen Schreibweise übernommen */
+  function schreibweise(n) {
+    const nn = normal(n.nachname),
+      nv = normal(n.vorname || "");
+    let best = null;
+    personen().forEach((p) => {
+      if (!p.nn) return;
+      const dn = p.nn === nn ? 0 : lev(p.nn, nn);
+      if (dn > 2 || (dn > 0 && nn.length < 4)) return;
+      const dv = !nv || !p.nv ? 1 : p.nv === nv ? 0 : lev(p.nv, nv);
+      if (nv && p.nv && dv > 2) return;
+      const sc = dn * 2 + dv;
+      if (!best || sc < best.sc) best = { sc, p };
+    });
+    if (!best || best.sc === 0) return n;
+    return { ...n, nachname: best.p.nach, vorname: n.vorname ? best.p.vor || n.vorname : n.vorname };
+  }
   function aufgabeStart(k) {
     const roh = k.roh;
     const d = { quelle: quelleAus(k.s), notiz: "" };
     const n = nameAus(roh);
-    if (n) Object.assign(d, n);
+    if (n) Object.assign(d, schreibweise(n));
     if (k.zeit && k.zeit.art === "tag") d.tag = k.zeit.von;
     const u = uhrzeitAus(k.s);
     if (u) [d.h, d.min] = u;
@@ -1195,7 +1214,7 @@
       } else if (f === "name") {
         const n = nameAus("für " + roh);
         if (!n) return { text: "Wie heißt die Kundin bzw. der Kunde? Vor- und Nachname." };
-        Object.assign(d, n);
+        Object.assign(d, schreibweise(n));
       } else if (f === "bekannt") {
         if (/^(ja|jo|klar|gern|genau|passt|richtig|stimmt|uebernehm)/.test(ns)) {
           const b = a.vorschlag;
@@ -1426,18 +1445,20 @@
       c.appendChild(b);
     });
   }
-  function fragen(text) {
+  function fragen(text, opts) {
     text = String(text || "").trim();
-    if (!text || !ebene) return;
+    if (!text || !ebene) return null;
+    const still = opts && opts.still; // Sprachmodus liest selbst vor
     blase("ich", esc(text));
     const a = aufgabe && !istTerminAuftrag(" " + normal(text) + " ") ? aufgabeWeiter(text) : beantworten(text);
     setTimeout(() => {
       blase("pv", a.text, a);
       chipsSetzen(a.chips);
-      sprechen(a.text);
+      if (!still) sprechen(a.text);
     }, 180);
+    return a;
   }
-  function oeffnen() {
+  function oeffnen(opts) {
     if (ebene) return;
     ebene = document.createElement("section");
     ebene.className = "fragpv";
@@ -1471,12 +1492,14 @@
       inp.value = "";
       fragen(t);
     };
+    if (window.fragProvisio && window.fragProvisio._nachOeffnen) window.fragProvisio._nachOeffnen(ebene, opts || {});
     blase("pv", `Hi${me && me.vorname ? " " + esc(me.vorname) : ""}, hier ist Donna. Frag mich etwas – oder gib mir einen Auftrag, z. B. „Buch mir einen Termin für Mario Müller morgen 12 Uhr“.`);
     chipsSetzen();
     setTimeout(() => inp.focus(), 350);
   }
   function schliessen() {
     if (!ebene) return;
+    if (window.fragProvisio && window.fragProvisio._vorSchliessen) window.fragProvisio._vorSchliessen();
     aufgabe = null; // halbe Aufträge nicht stehen lassen
     const e = ebene;
     ebene = null;
@@ -1510,20 +1533,25 @@
       return r;
     };
   }
-  if (typeof renderHeute === "function") {
-    const ohne = renderHeute;
-    renderHeute = function () {
-      const r = ohne.apply(this, arguments);
-      const box = document.getElementById("heute");
-      if (box && me && !box.querySelector(".fpheute")) {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.className = "fpheute";
-        b.innerHTML = `<span>💬</span> Frag Donna …`;
-        b.onclick = oeffnen;
-        box.prepend(b);
-      }
-      return r;
+  /* Donna schwebt auf „Heute“ unten rechts über der Leiste (sichtbar per CSS nur auf „Heute“).
+     Ist das Sprachmodell schon geladen, hört sie beim Antippen sofort zu – wie Siri. */
+  function fabEinbauen() {
+    if (document.getElementById("donnaFab")) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.id = "donnaFab";
+    b.className = "donnafab";
+    b.setAttribute("aria-label", "Donna – deine Assistentin");
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4.97 0 9 3.36 9 7.5S16.97 18 12 18c-.9 0-1.77-.1-2.6-.3L5 20l1.2-3.6C4.2 15 3 12.9 3 10.5 3 6.36 7.03 3 12 3z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>`;
+    b.onclick = async () => {
+      if (!me) return;
+      let sofort = false;
+      try {
+        sofort = !!(window.donnaStimme && (await window.donnaStimme.istGeladen()));
+      } catch (e) {}
+      oeffnen({ sprechen: sofort });
     };
+    document.body.appendChild(b);
   }
+  fabEinbauen();
 })();
