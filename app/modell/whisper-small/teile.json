@@ -1,0 +1,13 @@
+{
+ "modell": "whisper-small",
+ "dateien": {
+  "onnx/encoder_model_quantized.onnx": {
+   "groesse": 92326160,
+   "teile": 2
+  },
+  "onnx/decoder_model_merged_quantized.onnx": {
+   "groesse": 156750845,
+   "teile": 4
+  }
+ }
+}

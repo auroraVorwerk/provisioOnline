@@ -454,7 +454,7 @@
     {
       ...info(
         "Mit Donna sprechen",
-        "Donna sitzt jetzt unten rechts. Antippen und einfach sprechen – wie mit Siri. Sie antwortet laut und hört danach wieder zu; „Danke Donna“ beendet das Gespräch. Beim ersten Mal lädt sie einmalig ihr Sprachmodell (etwa 110 MB, am besten im WLAN). Die Sprache wird nur auf deinem iPhone erkannt.",
+        "Donna sitzt jetzt unten rechts. Antippen und einfach sprechen – wie mit Siri. Sie antwortet laut und hört danach wieder zu; „Danke Donna“ beendet das Gespräch. Beim ersten Mal lädt sie einmalig ihr Sprachmodell (etwa 250 MB, am besten im WLAN). Die Sprache wird nur auf deinem iPhone erkannt.",
         () => finde(".donnafab"),
       ),
       seit: "1.10",

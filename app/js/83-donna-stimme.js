@@ -20,7 +20,7 @@
   "use strict";
   if (!window.fragProvisio) return;
 
-  const MODELL = "whisper-base";
+  const MODELL = "whisper-small"; // ~250 MB; große Dateien liegen in Teilen (GitHub erlaubt höchstens 100 MB je Datei)
   const STILLE_MS = 1300; // so lange Pause beendet einen Satz
   const WARTEN_MS = 7000; // so lange wartet Donna im Gespräch auf eine Antwort
   const MAX_MS = 20000; // längste Aufnahme
@@ -50,10 +50,69 @@
     try {
       const c = await caches.open("transformers-cache");
       const k = await c.keys();
-      return k.some((r) => /decoder_model_merged_quantized/.test(r.url));
+      return k.some((r) => r.url.indexOf("/" + MODELL + "/onnx/decoder_model_merged_quantized") > -1);
     } catch (e) {
       return false;
     }
+  }
+  /*
+   * Lädt die geteilten Modelldateien (…onnx.teil0, teil1 …), setzt sie zusammen und legt sie
+   * unter ihrer normalen Adresse in „transformers-cache“ ab. transformers.js findet sie dort
+   * und lädt nichts mehr nach.
+   */
+  async function teileHolen(basis, fortschritt) {
+    const ordner = new URL("modell/" + MODELL + "/", basis).href;
+    const plan = await (await fetch(ordner + "teile.json", { cache: "no-cache" })).json();
+    const cache = await caches.open("transformers-cache");
+    const dateien = Object.entries(plan.dateien);
+    const gesamt = dateien.reduce((s, [, d]) => s + d.groesse, 0);
+    let fertig = 0;
+    const melden = (zusatz) => fortschritt && fortschritt(Math.min(0.97, ((fertig + zusatz) / gesamt) * 0.97), fertig + zusatz);
+    for (const [name, d] of dateien) {
+      const url = ordner + name;
+      if (await cache.match(url)) {
+        fertig += d.groesse;
+        melden(0);
+        continue;
+      }
+      const stuecke = [];
+      for (let i = 0; i < d.teile; i++) {
+        let blob = null;
+        for (let versuch = 0; versuch < 3 && !blob; versuch++) {
+          try {
+            const r = await fetch(url + ".teil" + i, { cache: "no-store" });
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            const leser = r.body.getReader();
+            const teil = [];
+            let n = 0;
+            for (;;) {
+              const { done, value } = await leser.read();
+              if (done) break;
+              teil.push(value);
+              n += value.byteLength;
+              melden(stuecke.reduce((s, b) => s + b.size, 0) + n);
+            }
+            blob = new Blob(teil);
+          } catch (e) {
+            if (versuch === 2) throw new Error("Das Sprachmodell konnte nicht geladen werden. Bitte im WLAN noch einmal versuchen.");
+          }
+        }
+        stuecke.push(blob);
+      }
+      const ganz = new Blob(stuecke, { type: "application/octet-stream" });
+      if (ganz.size !== d.groesse) throw new Error("Das Sprachmodell kam unvollständig an. Bitte noch einmal versuchen.");
+      await cache.put(url, new Response(ganz, { headers: { "Content-Type": "application/octet-stream", "Content-Length": String(ganz.size) } }));
+      fertig += d.groesse;
+      melden(0);
+    }
+    return gesamt;
+  }
+  /* Älteres Modell (whisper-base) aus dem Speicher werfen, sobald das neue läuft */
+  async function altesModellLoeschen() {
+    try {
+      const c = await caches.open("transformers-cache");
+      for (const r of await c.keys()) if (r.url.indexOf("/modell/") > -1 && r.url.indexOf("/modell/" + MODELL + "/") < 0) await c.delete(r);
+    } catch (e) {}
   }
   function modellLaden(fortschritt) {
     if (erkenner) return Promise.resolve(erkenner);
@@ -66,21 +125,16 @@
       T.env.localModelPath = new URL("modell/", basis).pathname; // Pfad, keine volle URL (sonst gilt es als „entfernt“)
       T.env.useBrowserCache = true;
       T.env.backends.onnx.wasm.wasmPaths = new URL("vendor/ort/", basis).href;
-      T.env.backends.onnx.wasm.numThreads = 1; // ohne Cross-Origin-Isolation kein Multithreading
+      /* Mehrere Kerne nur mit Cross-Origin-Isolation (setzt der Service Worker) – sonst einer */
+      T.env.backends.onnx.wasm.numThreads = window.crossOriginIsolated ? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 2)) : 1;
       T.env.backends.onnx.wasm.proxy = false;
-      const geladen = {};
+      const gesamt = await teileHolen(basis, fortschritt);
       erkenner = await T.pipeline("automatic-speech-recognition", MODELL, {
         dtype: { encoder_model: "q8", decoder_model_merged: "q8" },
         device: "wasm",
-        progress_callback: (p) => {
-          if (p.status === "progress" && p.file) {
-            geladen[p.file] = [p.loaded || 0, p.total || 0];
-            const l = Object.values(geladen).reduce((s, x) => s + x[0], 0);
-            const t = Object.values(geladen).reduce((s, x) => s + x[1], 0);
-            if (fortschritt && t) fortschritt(l / t, l);
-          }
-        },
       });
+      if (fortschritt) fortschritt(1, gesamt);
+      altesModellLoeschen();
       return erkenner;
     })().catch((e) => {
       laden = null;
@@ -396,7 +450,7 @@
       const box = document.createElement("div");
       box.className = "fpladen";
       box.innerHTML = `<b>Sprachmodell laden</b>
-        <p>Damit Donna dich versteht, lädt sie einmalig ihr Sprachmodell (etwa 110 MB) – am besten im WLAN. Danach funktioniert es offline. Die Sprache wird nur auf deinem iPhone erkannt, nichts wird verschickt.</p>
+        <p>Damit Donna dich versteht, lädt sie einmalig ihr Sprachmodell (etwa 250 MB) – am besten im WLAN. Danach funktioniert es offline. Die Sprache wird nur auf deinem iPhone erkannt, nichts wird verschickt.</p>
         <div class="fpbalken"><i></i></div><span class="fpproz"></span>
         <div class="fpladeknoepfe"><button type="button" class="btn" data-l="nein">Später</button><button type="button" class="btn primary" data-l="ja">Jetzt laden</button></div>`;
       f.querySelector(".fplog").appendChild(box);

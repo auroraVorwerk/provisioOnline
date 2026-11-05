@@ -7,6 +7,28 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.2.2",
+    datum: "5. November 2026",
+    kurz: "Donna versteht deutlich besser (größeres Sprachmodell) und rechnet schneller",
+    teile: [
+      [
+        "Verbessert",
+        [
+          "Donna hört jetzt mit dem größeren Sprachmodell Whisper small: weniger Verhörer, Namen, Zahlen und Fachbegriffe kommen viel genauer an.",
+          "Das neue Modell ist etwa 250 MB groß und wird beim nächsten Antippen von Donna einmalig geladen – am besten im WLAN. Das alte Modell wird danach automatisch gelöscht.",
+          "Die Spracherkennung nutzt jetzt mehrere Prozessorkerne des iPhones und ist dadurch schneller. Das klappt ab dem zweiten Öffnen der App nach dem Update.",
+        ],
+      ],
+      [
+        "Tipp",
+        [
+          "Schönere Stimme: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch, dort z. B. „Anna (Premium)“ laden. Donna nimmt automatisch die beste Stimme.",
+        ],
+      ],
+      ["Sicherheit", ["Die App läuft jetzt „cross-origin-isoliert“: Fremde Seiten können sie weder einbetten noch Daten mit ihr teilen."]],
+    ],
+  },
+  {
     v: "Online 1.2.1",
     datum: "5. November 2026",
     kurz: "PDF-Abrechnung auf dem iPhone wieder lesbar, Donna versteht Modellnamen",
