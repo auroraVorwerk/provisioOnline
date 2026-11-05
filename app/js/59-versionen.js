@@ -7,6 +7,29 @@
  */
 const VERSIONEN = [
   {
+    v: "Online 1.2.3",
+    datum: "5. November 2026",
+    kurz: "Neues Donna-Zeichen, Donna im Menü lila, schönere Statistik-PDF, sauberes PDF-Übernehmen-Blatt",
+    teile: [
+      [
+        "Neu",
+        [
+          "Donna hat ein eigenes Zeichen: ein Funke mit drehendem Farbring statt der Sprechblase.",
+          "Im Menü ist Donna jetzt ein lila Eintrag ganz oben statt eines grauen Feldes. Bei offenem Menü verschwindet der schwebende Knopf.",
+        ],
+      ],
+      [
+        "Verbessert",
+        [
+          "Statistik-PDF: Die farbigen Spaltenköpfe, Häkchen und Summen sind eigene, rundum abgerundete Felder – keine angeschnittenen Kanten mehr am Gruppenanfang.",
+          "Statistik-PDF: Angesprochen, aber nichts bekommen (z. B. keine Empfehlung) ist jetzt farbig mit ✕ statt grau.",
+          "Statistik-PDF: Schmalere Spalten, dadurch wird alles etwa 20 % größer gedruckt und besser lesbar.",
+          "„Abrechnung übernehmen“: Texte und Felder sitzen mit Abstand in ihren Feldern statt auf der Kante; der Vertriebsmonat wird nicht mehr abgeschnitten.",
+        ],
+      ],
+    ],
+  },
+  {
     v: "Online 1.2.2",
     datum: "5. November 2026",
     kurz: "Donna versteht deutlich besser (größeres Sprachmodell) und rechnet schneller",

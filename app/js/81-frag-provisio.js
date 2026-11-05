@@ -1513,6 +1513,10 @@
   addEventListener("hashchange", schliessen);
   window.fragProvisio = { oeffnen, schliessen, beantworten, fragen, antwort: (t) => (aufgabe && !istTerminAuftrag(" " + normal(t) + " ") ? aufgabeWeiter(t) : beantworten(t)), aufgabe: () => aufgabe };
 
+  /* Donnas Zeichen: großer Funke mit kleinem Funken – Assistentin statt Sprechblase */
+  const DONNA_ICON = `<svg class="donnaicon" viewBox="0 0 24 24" aria-hidden="true"><path class="ds1" fill="currentColor" d="M10.5 3.5c.8 5.1 2.1 6.6 8 8.5-5.9 1.9-7.2 3.4-8 8.5-.8-5.1-2.1-6.6-8-8.5 5.9-1.9 7.2-3.4 8-8.5z"/><path class="ds2" fill="currentColor" d="M19 1.8c.35 2 .9 2.6 3 3-2.1.4-2.65 1-3 3-.35-2-.9-2.6-3-3 2.1-.4 2.65-1 3-3z"/><circle class="ds3" cx="19.5" cy="18.5" r="1.1" fill="currentColor"/></svg>`;
+  window.DONNA_ICON = DONNA_ICON;
+
   /* Einstieg: oben im Menü und auf „Heute“ */
   if (typeof renderMenu === "function") {
     const ohne = renderMenu;
@@ -1523,7 +1527,7 @@
         const b = document.createElement("button");
         b.type = "button";
         b.className = "navlink fpnav";
-        b.innerHTML = `<span class="mic fpmic">💬</span>Donna`;
+        b.innerHTML = `<span class="mic fpmic">${DONNA_ICON}</span>Donna<small>frag mich etwas</small>`;
         b.onclick = () => {
           if (typeof setMenu === "function") setMenu(false);
           setTimeout(oeffnen, 120);
@@ -1542,7 +1546,7 @@
     b.id = "donnaFab";
     b.className = "donnafab";
     b.setAttribute("aria-label", "Donna – deine Assistentin");
-    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c4.97 0 9 3.36 9 7.5S16.97 18 12 18c-.9 0-1.77-.1-2.6-.3L5 20l1.2-3.6C4.2 15 3 12.9 3 10.5 3 6.36 7.03 3 12 3z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></svg>`;
+    b.innerHTML = DONNA_ICON;
     b.onclick = async () => {
       if (!me) return;
       let sofort = false;

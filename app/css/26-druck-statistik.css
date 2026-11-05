@@ -211,3 +211,152 @@
     box-shadow: none !important;
   }
 }
+
+/*
+ * Beta 1.10.3: Farbfelder als eigene Pillen (rundum rund, nichts angeschnitten),
+ * echte Lücken zwischen den Gruppen, „gefragt, aber nichts bekommen“ farbig mit ✕,
+ * größere Schrift.
+ */
+@media print {
+  html body.drucke-stat .dsblatt table.stat {
+    font-size: calc(17 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat .dsluecke {
+    width: calc(12 * var(--u)) !important;
+    min-width: calc(12 * var(--u)) !important;
+    max-width: calc(12 * var(--u)) !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tbody tr td.dsluecke {
+    background: transparent !important;
+    border: 0 !important;
+  }
+  /* Zellen mit Pille: Zelle selbst unsichtbar, nur schmaler Rand als Abstand */
+  html body.drucke-stat .dsblatt table.stat th.vh,
+  html body.drucke-stat .dsblatt table.stat th.vh[style],
+  html body.drucke-stat .dsblatt table.stat td.tick,
+  html body.drucke-stat .dsblatt table.stat td.tick[style],
+  html body.drucke-stat .dsblatt table.stat td.tick.nein[style],
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: calc(3 * var(--u)) calc(2 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tbody tr.z0 td.tick,
+  html body.drucke-stat .dsblatt table.stat tbody tr.z1 td.tick,
+  html body.drucke-stat .dsblatt table.stat tbody tr.z0 td.tick.nein[style],
+  html body.drucke-stat .dsblatt table.stat tbody tr.z1 td.tick.nein[style] {
+    border-bottom: calc(1 * var(--u)) solid #1b2b42 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tbody tr.z0 td.tick,
+  html body.drucke-stat .dsblatt table.stat tbody tr.z0 td.tick.nein[style] {
+    background: #0f1c2d !important;
+    opacity: 1 !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tbody tr.z1 td.tick,
+  html body.drucke-stat .dsblatt table.stat tbody tr.z1 td.tick.nein[style] {
+    background: #122236 !important;
+    opacity: 1 !important;
+  }
+  html body.drucke-stat .dsblatt .dspill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: calc(24 * var(--u));
+    min-height: calc(30 * var(--u));
+    border-radius: calc(9 * var(--u));
+    background: color-mix(in srgb, var(--pc) 78%, #0f1c2d);
+    color: #ffffff;
+    font-weight: 800;
+  }
+  /* Spaltenköpfe: hohe Pillen, Text senkrecht */
+  html body.drucke-stat .dsblatt table.stat th.vh {
+    height: auto !important;
+    font-size: calc(15 * var(--u)) !important;
+    padding-top: 0 !important;
+    padding-bottom: calc(6 * var(--u)) !important;
+    vertical-align: bottom !important;
+  }
+  html body.drucke-stat .dsblatt table.stat th.vh .dspill {
+    min-height: calc(172 * var(--u));
+    min-width: calc(24 * var(--u));
+    padding: calc(10 * var(--u)) 0;
+    border-radius: calc(12 * var(--u));
+    background: color-mix(in srgb, var(--pc) 85%, #0f1c2d);
+    font-weight: 700;
+  }
+  html body.drucke-stat .dsblatt table.stat th.vh .dspill span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    color: #ffffff !important;
+  }
+  /* Häkchen und Zahlen */
+  html body.drucke-stat .dsblatt table.stat td.tick .dspill {
+    font-size: calc(18 * var(--u));
+  }
+  /* Angesprochen, aber nichts bekommen: farbig mit ✕ */
+  html body.drucke-stat .dsblatt table.stat td.tick .dspill.nein {
+    background: color-mix(in srgb, var(--pc) 62%, #0f1c2d);
+    color: #ffffff;
+    font-size: calc(16 * var(--u));
+  }
+  /* Summen */
+  html body.drucke-stat .dsblatt table.stat tr.sum td.dssumme .dspill {
+    background: color-mix(in srgb, var(--pc) 55%, #0b1726);
+    font-size: calc(17 * var(--u));
+  }
+  /* größere Schrift im Rest */
+  html body.drucke-stat .dsblatt table.stat th.col-time,
+  html body.drucke-stat .dsblatt table.stat th.col-name,
+  html body.drucke-stat .dsblatt table.stat th.col-alt,
+  html body.drucke-stat .dsblatt table.stat th.col-num {
+    font-size: calc(15 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.name {
+    font-size: calc(17 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.name small {
+    font-size: calc(14 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat td.alt {
+    font-size: calc(15 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.sum td {
+    font-size: calc(17 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat thead tr.grp th {
+    font-size: calc(13 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat tr.dayrow span {
+    font-size: calc(15 * var(--u)) !important;
+  }
+}
+/* auch in der App-Ansicht: „angesprochen, nichts bekommen“ farbig mit ✕ statt grau */
+.stat td.tick.nein {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 24%, var(--tick, #1a2a40)) !important;
+}
+/* schmalere Spalten im Druck → alles wird größer aufs Blatt skaliert (siehe DRUCK_DICHTE) */
+@media print {
+  html body.drucke-stat .dsblatt table.stat .col-tick {
+    width: calc(27 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat .col-alt {
+    width: calc(90 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat .col-num {
+    width: calc(84 * var(--u)) !important;
+  }
+  html body.drucke-stat .dsblatt table.stat {
+    --sw1: calc(70 * var(--u)) !important;
+    --sw2: calc(185 * var(--u)) !important;
+  }
+}

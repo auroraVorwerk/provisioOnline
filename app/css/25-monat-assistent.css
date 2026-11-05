@@ -437,3 +437,151 @@ body[data-page="heute"] #heute,
 body[data-page="planer"] #page-planer {
   padding-bottom: 84px;
 }
+
+/* ---------- Beta 1.10.3: Donnas eigenes Zeichen, Menüeintrag lila ---------- */
+.donnaicon {
+  display: block;
+  overflow: visible;
+}
+.donnaicon .ds2,
+.donnaicon .ds3 {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.donnafab {
+  isolation: isolate;
+  background: radial-gradient(120% 120% at 30% 20%, #a77bff 0%, #7444e6 45%, #4b23b5 100%);
+}
+/* drehender Farbring um den Knopf */
+.donnafab::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  z-index: -1;
+  background: conic-gradient(#ff7ad9, #9a6bff, #55c8ff, #9a6bff, #ff7ad9);
+  animation: donnadreh 7s linear infinite;
+}
+.donnafab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: -1;
+  background: radial-gradient(120% 120% at 30% 20%, #a77bff 0%, #7444e6 45%, #4b23b5 100%);
+}
+.donnafab .donnaicon {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
+}
+.donnafab .ds2 {
+  animation: donnafunkel 2.6s ease-in-out infinite;
+}
+.donnafab .ds3 {
+  animation: donnafunkel 2.6s ease-in-out 1.3s infinite;
+}
+@keyframes donnadreh {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes donnafunkel {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.55);
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .donnafab::before,
+  .donnafab .ds2,
+  .donnafab .ds3 {
+    animation: none;
+  }
+}
+/* bei offenem Menü verschwindet der schwebende Knopf */
+body:has(#drawer.open) .donnafab {
+  display: none !important;
+}
+
+/* Menüeintrag „Donna“: lila statt grauer Standardknopf */
+#navHaupt .navlink.fpnav,
+.drawer .navlink.fpnav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0 !important;
+  font: inherit;
+  font-weight: 700;
+  color: #fff !important;
+  background: linear-gradient(100deg, #5b30c9, #8d5cf0) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 8px 20px rgba(80, 40, 180, 0.35);
+  cursor: pointer;
+}
+.navlink.fpnav small {
+  margin-left: auto;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+.navlink.fpnav .fpmic {
+  display: grid;
+  place-content: center;
+  width: 26px;
+  height: 26px;
+  color: #fff !important;
+}
+.navlink.fpnav .donnaicon {
+  width: 22px;
+  height: 22px;
+}
+
+/* „Abrechnung übernehmen“: Gruppen mit Innenabstand – Text und Felder sitzen nicht mehr auf der Kante */
+html body #modal .sheet:has(#piMonat) .grp {
+  padding: 12px 14px 14px !important;
+}
+html body #modal .sheet:has(#piMonat) .grp .field {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+html body #modal .sheet:has(#piMonat) .grp .field + .field {
+  margin-top: 0 !important;
+}
+html body #modal .sheet:has(#piMonat) .grp .field label {
+  display: block;
+  padding: 0 0 6px 2px !important;
+  margin: 0 !important;
+  min-height: 2.6em;
+  display: flex;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+html body #modal .sheet:has(#piMonat) .grp:not(.pigitter) .field label {
+  min-height: 0;
+}
+html body #modal .sheet:has(#piMonat) .pigitter {
+  row-gap: 12px !important;
+}
+html body #modal .sheet:has(#piMonat) .grp .piwahl {
+  padding: 8px 0 !important;
+}
+html body #modal .sheet:has(#piMonat) .grp.pidetails {
+  padding: 4px 14px !important;
+}
+html body #modal .sheet:has(#piMonat) .h4 {
+  margin: 18px 2px 8px !important;
+}
+html body #modal .sheet #piMonat {
+  font-size: 15px !important;
+  padding-left: 12px !important;
+  padding-right: 28px !important;
+  text-overflow: ellipsis;
+}

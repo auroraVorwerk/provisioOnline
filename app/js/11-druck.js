@@ -77,19 +77,18 @@ const DRUCK_KURZ = {
 function druckTabelleAufbereiten(html) {
   const t = document.createElement("table");
   t.innerHTML = html;
-  /* Trennspalten raus, der Gruppenanfang bekommt stattdessen Luft */
-  t.querySelectorAll("tr").forEach((tr) => {
-    let neu = false;
-    [...tr.children].forEach((c) => {
-      if (c.classList.contains("vsep")) {
-        c.remove();
-        neu = true;
-        return;
-      }
-      if (neu) c.classList.add("gstart");
-      neu = false;
-    });
+  /* Trennspalten werden zu schmalen, leeren Lücken – keine Balken, keine angeschnittenen Kanten */
+  t.querySelectorAll(".vsep").forEach((c) => {
+    c.className = "dsluecke";
+    c.textContent = "";
+    c.removeAttribute("style");
   });
+  /* Farbige Felder als eigene, rundum abgerundete Pillen */
+  const pille = (el, farbe, extra) => {
+    el.innerHTML = `<span class="dspill${extra || ""}" style="--pc:${farbe}">${el.innerHTML}</span>`;
+  };
+  t.querySelectorAll("thead th.vh").forEach((th) => pille(th, th.style.background || th.style.backgroundColor || "#3a4d66"));
+  t.querySelectorAll("tbody td.tick").forEach((td) => pille(td, td.style.color || "#3b9bf0", td.classList.contains("nein") ? " nein" : ""));
   const spalten = t.querySelector("thead tr:not(.grp)") || t.querySelectorAll("thead tr")[1];
   const anzahl = spalten ? [...spalten.children].reduce((n, c) => n + (c.colSpan || 1), 0) : 0;
   t.querySelectorAll("td[colspan]").forEach((td) => {
@@ -116,8 +115,9 @@ function druckTabelleAufbereiten(html) {
         i += td.colSpan || 1;
         if (!f || td.classList.contains("tick")) return;
         td.classList.add("dssumme");
-        if (/^[–\-]?$/.test(td.textContent.trim())) td.classList.add("null");
         td.style.setProperty("--tc", f);
+        if (/^[–\-]?$/.test(td.textContent.trim())) td.classList.add("null");
+        else pille(td, f);
       });
     }
   }
@@ -144,6 +144,7 @@ function druckBlattBauen(tabelle, mo, wer) {
  * Gemessen wird nur die natürliche Tabellengröße; die Skalierung
  * übernimmt das Druckblatt selbst (siehe --u im Stylesheet).
  */
+const DRUCK_DICHTE = 0.82; // natürliche Breite im Druck ÷ Breite am Bildschirm (gemessen, Beta 1.10.3)
 function druckSkalieren() {
   const box = document.getElementById("druckStat");
   document.body.classList.add("druck-messen");
@@ -153,7 +154,7 @@ function druckSkalieren() {
   const dh = Math.max(inner ? inner.scrollHeight : 0, 200);
   document.body.classList.remove("druck-messen");
   if (inner) {
-    inner.style.setProperty("--dw", Math.ceil(dw * 1.01));
+    inner.style.setProperty("--dw", Math.ceil(dw * DRUCK_DICHTE)); /* Druckspalten sind schmaler als am Bildschirm */
     inner.style.setProperty("--dh", Math.ceil(dh * 1.06)); /* etwas Luft nach unten */
   }
 }
